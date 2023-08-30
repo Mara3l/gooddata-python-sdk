@@ -22,6 +22,8 @@ Start integrating GoodData into your Python application right now.
 
 1. Connect to your instance of GoodData using:
 
+
+    Yes?
     ```python
     # GoodData base URL, e.g. "https://www.example.com"
     host = "https://www.example.com"
