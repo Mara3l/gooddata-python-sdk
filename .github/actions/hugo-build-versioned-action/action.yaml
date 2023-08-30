@@ -45,7 +45,7 @@ runs:
       run: |
         cd docs
         chmod +x ./generate.sh
-        ./generate.sh ${{ inputs.fetch-from }} master ${{ inputs.keep-master}}
+        ../scripts/generate.sh ${{ inputs.fetch-from }} master ${{ inputs.keep-master}}
     - name: Hugo Build
       uses: ./.github/actions/hugo-build-action
       with:
