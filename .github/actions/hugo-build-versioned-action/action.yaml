@@ -44,12 +44,10 @@ runs:
       shell: bash
       run: |
         cd docs
-        rm -f generate.sh
-        wget https://raw.githubusercontent.com/gooddata/gooddata-python-sdk/master/scripts/generate.sh
         chmod +x ./generate.sh
         ./generate.sh ${{ inputs.fetch-from }} master ${{ inputs.keep-master}}
     - name: Hugo Build
-      uses: gooddata/gooddata-python-sdk/.github/actions/hugo-build-action@master
+      uses: ./.github/actions/hugo-build-action
       with:
         hugo-env: ${{ inputs.hugo-env }}
         working-directory: ${{ inputs.working-directory }}

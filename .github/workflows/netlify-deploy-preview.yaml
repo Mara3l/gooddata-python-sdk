@@ -29,7 +29,7 @@ jobs:
           rsync --delete -av PR-tmp/docs/content/en/ docs/content/en/
           rm -rf PR-tmp
       - name: Generate Versioned Docs
-        uses: gooddata/gooddata-python-sdk/.github/actions/hugo-build-versioned-action@master
+        uses: ./.github/actions/hugo-build-versioned-action
         with:
           base-url: https://preview-${{ env.GITHUB_PR_NUMBER }}--${{ env.NETLIFY_SITE_NAME }}.netlify.app
           keep-master: keep_master
@@ -44,8 +44,6 @@ jobs:
 # `htmltest` is after publishing, so we can see the artifact.
       - name: htmltest
         run: |
-          rm -f htmltest.sh
-          wget https://raw.githubusercontent.com/gooddata/gooddata-python-sdk/master/scripts/htmltest.sh
           chmod +x ./htmltest.sh
           ./htmltest.sh -c docs/.htmltest.yml docs/public
 # Commented out, because it has been failing. Check up later.
