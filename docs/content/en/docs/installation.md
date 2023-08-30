@@ -41,7 +41,7 @@ We recommend you always work with the newest (supported) Python available.
 #### GoodData.CN
 
 Here is a mapping table of compatibility, which version of Python SDK to use with each version of GoodData.CN
-
+....
 | Gooddata.CN | Python SDK  |
 |---|---|
 | v2.5 | v1.5 |
