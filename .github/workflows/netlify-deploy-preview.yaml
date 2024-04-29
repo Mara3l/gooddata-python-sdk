@@ -1,11 +1,6 @@
 name: Netlify Deploy Preview
 on:
   pull_request_target:
-    branches:
-      - 'rel/**'
-      - master
-    paths:
-      - 'docs/**'
 
 env:
   GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -23,13 +18,8 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.ref }}
-          path: 'PR-tmp'
-      - name: Get only changed docs
-        run: |
-          rsync --delete -av PR-tmp/docs/content/en/ docs/content/en/
-          rm -rf PR-tmp
       - name: Generate Docs
-        uses: gooddata/gooddata-python-sdk/.github/actions/hugo-build-action@master
+        uses: mara3l/gooddata-python-sdk/.github/actions/hugo-build-action
         with:
           base-url: https://preview-${{ env.GITHUB_PR_NUMBER }}--${{ env.NETLIFY_SITE_NAME }}.netlify.app
       - name: Publish
@@ -43,7 +33,7 @@ jobs:
       - name: htmltest
         run: |
           rm -f htmltest.sh
-          wget https://raw.githubusercontent.com/gooddata/gooddata-python-sdk/master/scripts/htmltest.sh
+          wget https://raw.githubusercontent.com/mara3l/gooddata-python-sdk/master/scripts/htmltest.sh
           chmod +x ./htmltest.sh
           ./htmltest.sh -c docs/.htmltest.yml docs/public
 # Commented out, because it has been failing. Check up later.
