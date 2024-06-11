@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, List, Union
 
 from gooddata_sdk import (
+    CatalogDataSourceMotherDuck,
     CatalogDataSourcePostgres,
     CatalogDataSourceSnowflake,
     CatalogDataSourceVertica,
@@ -20,7 +21,12 @@ from gooddata_sdk import (
 
 from gooddata_dbt.gooddata.config import GoodDataConfigLocalizationTo, GoodDataConfigProduct
 
-DataSource = Union[CatalogDataSourcePostgres, CatalogDataSourceSnowflake, CatalogDataSourceVertica]
+DataSource = Union[
+    CatalogDataSourcePostgres,
+    CatalogDataSourceSnowflake,
+    CatalogDataSourceVertica,
+    CatalogDataSourceMotherDuck,
+]
 
 
 class GoodDataApiWrapper:
@@ -31,7 +37,7 @@ class GoodDataApiWrapper:
 
     def get_visualizations(self, workspace_id: str) -> List[Visualization]:
         if self.dry_run:
-            self.logger.info("Dry run - skipping insights listing")
+            self.logger.info("Dry run - skipping visualizations listing")
             return []
         else:
             return self.sdk.visualizations.get_visualizations(workspace_id)

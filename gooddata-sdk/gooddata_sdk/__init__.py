@@ -32,6 +32,7 @@ from gooddata_sdk.catalog.data_source.entity_model.data_source import (
     CatalogDataSourceDatabricks,
     CatalogDataSourceGreenplum,
     CatalogDataSourceMariaDb,
+    CatalogDataSourceMotherDuck,
     CatalogDataSourceMsSql,
     CatalogDataSourceMySql,
     CatalogDataSourcePostgres,
@@ -41,6 +42,7 @@ from gooddata_sdk.catalog.data_source.entity_model.data_source import (
     DatabricksAttributes,
     GreenplumAttributes,
     MariaDbAttributes,
+    MotherDuckAttributes,
     MsSqlAttributes,
     MySqlAttributes,
     PostgresAttributes,
@@ -51,7 +53,12 @@ from gooddata_sdk.catalog.data_source.entity_model.data_source import (
 from gooddata_sdk.catalog.data_source.service import CatalogDataSourceService
 from gooddata_sdk.catalog.data_source.validation.data_source import DataSourceValidator
 from gooddata_sdk.catalog.depends_on import CatalogDependsOn, CatalogDependsOnDateFilter
-from gooddata_sdk.catalog.entity import AttrCatalogEntity, BasicCredentials, TokenCredentialsFromFile
+from gooddata_sdk.catalog.entity import (
+    AttrCatalogEntity,
+    BasicCredentials,
+    TokenCredentialsFromEnvVar,
+    TokenCredentialsFromFile,
+)
 from gooddata_sdk.catalog.export.request import (
     ExportCustomLabel,
     ExportCustomMetric,
@@ -223,11 +230,6 @@ from gooddata_sdk.sdk import GoodDataSdk
 from gooddata_sdk.table import ExecutionTable, TableService
 from gooddata_sdk.utils import SideLoads
 from gooddata_sdk.visualization import (
-    Insight,
-    InsightAttribute,
-    InsightBucket,
-    InsightMetric,
-    InsightService,
     Visualization,
     VisualizationAttribute,
     VisualizationBucket,
