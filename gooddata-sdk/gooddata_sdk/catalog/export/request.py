@@ -1,5 +1,5 @@
 # (C) 2023 GoodData Corporation
-from typing import Dict, Optional, Type
+from typing import Optional
 
 import attr
 from gooddata_api_client.model.custom_label import CustomLabel as ApiCustomLabel
@@ -16,7 +16,7 @@ class ExportCustomLabel(Base):
     title: str
 
     @staticmethod
-    def client_class() -> Type[ApiCustomLabel]:
+    def client_class() -> type[ApiCustomLabel]:
         return ApiCustomLabel
 
 
@@ -26,17 +26,17 @@ class ExportCustomMetric(Base):
     format: str
 
     @staticmethod
-    def client_class() -> Type[ApiCustomMetric]:
+    def client_class() -> type[ApiCustomMetric]:
         return ApiCustomMetric
 
 
 @attr.s(auto_attribs=True, kw_only=True)
 class ExportCustomOverride(Base):
-    labels: Optional[Dict[str, ExportCustomLabel]] = None
-    metrics: Optional[Dict[str, ExportCustomMetric]] = None
+    labels: Optional[dict[str, ExportCustomLabel]] = None
+    metrics: Optional[dict[str, ExportCustomMetric]] = None
 
     @staticmethod
-    def client_class() -> Type[ApiCustomOverride]:
+    def client_class() -> type[ApiCustomOverride]:
         return ApiCustomOverride
 
 
@@ -46,7 +46,7 @@ class ExportSettings(Base):
     show_filters: bool
 
     @staticmethod
-    def client_class() -> Type[ApiSettings]:
+    def client_class() -> type[ApiSettings]:
         return ApiSettings
 
 
@@ -72,18 +72,18 @@ class ExportRequest(Base):
         """
         Validates that the provided format is supported and raises ValueError if not.
         """
-        supported_formats = ["CSV", "XLSX"]
+        supported_formats = ["CSV", "XLSX", "HTML", "PDF"]
         if self.format not in supported_formats:
             raise ValueError(
-                f"format '{self.format}' is not presented " f"in supported formats {','.join(supported_formats)}"
+                f"format '{self.format}' is not presented in supported formats {','.join(supported_formats)}"
             )
 
     @staticmethod
-    def client_class() -> Type[TabularExportRequest]:
+    def client_class() -> type[TabularExportRequest]:
         """
         Returns the appropriate client class for the tabular export request.
         Returns:
-            Type[TabularExportRequest]: TabularExportRequest class
+            type[TabularExportRequest]: TabularExportRequest class
         """
         return TabularExportRequest
 

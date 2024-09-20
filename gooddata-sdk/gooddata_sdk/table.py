@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Generator
 from operator import attrgetter
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
-from warnings import warn
+from typing import Any, Callable, Optional, Union
 
 from attrs import define, field, frozen
 from attrs.setters import frozen as frozen_attr
@@ -25,7 +25,6 @@ from gooddata_sdk.compute.service import ComputeService
 from gooddata_sdk.visualization import (
     AttributeSortType,
     BucketType,
-    Insight,
     LocatorItemType,
     SortDirection,
     SortType,
@@ -40,7 +39,7 @@ from gooddata_sdk.visualization import (
 logger = logging.getLogger(__name__)
 
 _MEASURE_GROUP_IDENTIFIER = "measureGroup"
-_TOTAL_ORDER = ["SUM", "MAX", "MIN", "AVG", "MED"]
+_TOTAL_ORDER = ["SUM", "MAX", "MIN", "AVG", "MED", "NAT"]
 
 _TABLE_ROW_BATCH_SIZE = 512
 """
@@ -74,9 +73,9 @@ _ATTR_SORT_TYPE_TO_API = {
 class TableDimension:
     """Dataclass used during total and dimension computation."""
 
-    item_ids: List[str] = field(on_setattr=frozen_attr)
+    item_ids: list[str] = field(on_setattr=frozen_attr)
     idx: int = field(on_setattr=frozen_attr)
-    sorting: List[Dict] = field(default=[])
+    sorting: list[dict] = field(default=[])
 
     def to_exec_table_dimension(self) -> ExecTableDimension:
         return ExecTableDimension(
@@ -527,10 +526,10 @@ def _convert_total_dimensions(
 class TotalsComputeInfo:
     """Dataclass containing different values used for special case construction of pivot table totals."""
 
-    row_attr_ids: List[str] = field(on_setattr=frozen_attr)
-    col_attr_ids: List[str] = field(on_setattr=frozen_attr)
-    measure_group_rows: List[str] = field(on_setattr=frozen_attr)
-    measure_group_cols: List[str] = field(on_setattr=frozen_attr)
+    row_attr_ids: list[str] = field(on_setattr=frozen_attr)
+    col_attr_ids: list[str] = field(on_setattr=frozen_attr)
+    measure_group_rows: list[str] = field(on_setattr=frozen_attr)
+    measure_group_cols: list[str] = field(on_setattr=frozen_attr)
     has_row_and_column_grand_totals: bool = False
     has_row_and_column_sub_totals: bool = False
     has_row_subtotal_and_column_grand_total: bool = False
@@ -746,6 +745,19 @@ def get_exec_for_non_pivot(visualization: Visualization) -> ExecutionDefinition:
     )
 
 
+def _vis_is_table(visualization: Visualization) -> bool:
+    attributes = visualization._vo.get("attributes")
+    if not attributes:
+        return False
+    content = attributes.get("content")
+    if not content:
+        return False
+    vis_url = content.get("visualizationUrl")
+    if not vis_url:
+        return False
+    return vis_url.split(":")[-1] == "table"
+
+
 class TableService:
     """
     The TableService provides a convenient way to drive computations and access the results in a tabular fashion.
@@ -760,23 +772,17 @@ class TableService:
         self._compute = ComputeService(api_client)
 
     def for_visualization(self, workspace_id: str, visualization: Visualization) -> ExecutionTable:
-        # Assume the received visualization is a pivot table if it contains row ("attribute") bucket
+        # Assume the received visualization is a pivot table if:
+        # - we can parse out "table" suffix from the attributes.contents.visualizationUrl
+        # or
+        # - it contains row ("attribute") bucket
         exec_def = (
             _get_exec_for_pivot(visualization)
-            if visualization.has_bucket_of_type(BucketType.ROWS)
+            if _vis_is_table(visualization) or visualization.has_bucket_of_type(BucketType.ROWS)
             else get_exec_for_non_pivot(visualization)
         )
         response = self._compute.for_exec_def(workspace_id=workspace_id, exec_def=exec_def)
         return _as_table(response)
-
-    def for_insight(self, workspace_id: str, insight: Insight) -> ExecutionTable:
-        warn(
-            "This method is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'for_visualization' method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.for_visualization(workspace_id=workspace_id, visualization=insight)
 
     def for_items(
         self, workspace_id: str, items: list[Union[Attribute, Metric]], filters: Optional[list[Filter]] = None

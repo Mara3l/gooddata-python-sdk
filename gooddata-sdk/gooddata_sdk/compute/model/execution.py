@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from attr.setters import frozen as frozen_attr
 from attrs import define, field
@@ -33,7 +33,7 @@ class TotalDefinition:
     """total's local identifier"""
 
     aggregation: str
-    """aggregation function; case insensitive; one of SUM, MIN, MAX, MED, AVG"""
+    """aggregation function; case insensitive; one of SUM, MIN, MAX, MED, AVG, NAT"""
 
     metric_local_id: str
     """local identifier of the measure to calculate total for"""
@@ -45,10 +45,10 @@ class TotalDefinition:
 class TableDimension:
     """Dataclass used during total and dimension computation."""
 
-    item_ids: Optional[List[str]] = field(on_setattr=frozen_attr)
+    item_ids: Optional[list[str]] = field(on_setattr=frozen_attr)
     """table dimension item local identifiers"""
 
-    sorting: List[dict] = field(default=[])
+    sorting: list[dict] = field(default=[])
     """sorting defined for the given table dimension"""
 
 
@@ -198,7 +198,7 @@ class ExecutionDefinition:
         return models.AfmExecution(execution=execution, result_spec=result_spec)
 
 
-ResultSizeDimensions = Tuple[Optional[int], ...]
+ResultSizeDimensions = tuple[Optional[int], ...]
 
 
 class ResultSizeDimensionsLimitsExceeded(Exception):

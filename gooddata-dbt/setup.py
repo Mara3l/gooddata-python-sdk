@@ -7,10 +7,10 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 REQUIRES = [
-    "gooddata-sdk~=1.18.1",
+    "gooddata-sdk~=1.27.0",
     "pyyaml>=5.1",
-    "attrs>=21.4.0,<=23.2.0",
-    "cattrs>=22.1.0,<=23.2.3",
+    "attrs>=21.4.0,<=24.2.0",
+    "cattrs>=22.1.0,<=24.1.1",
     "requests~=2.31.0",
     "tabulate~=0.8.10",
 ]
@@ -20,7 +20,7 @@ setup(
     description="dbt plugin for GoodData",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    version="1.18.1",
+    version="1.27.0",
     author="GoodData",
     author_email="support@gooddata.com",
     license="MIT",
@@ -28,7 +28,7 @@ setup(
     license_files=("LICENSE.txt",),
     install_requires=REQUIRES,
     packages=find_packages(exclude=["tests*"]),
-    python_requires=">=3.8.0",
+    python_requires=">=3.9.0",
     scripts=[
         "bin/gooddata-dbt",
     ],
@@ -36,10 +36,10 @@ setup(
         "Development Status :: 4 - Beta",
         "Environment :: Console",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Database",
         "Topic :: Scientific/Engineering",
         "Topic :: Software Development",

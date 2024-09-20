@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -29,6 +29,7 @@ from gooddata_sdk import (
     DatabricksAttributes,
     ExecutionDefinition,
     GoodDataSdk,
+    KeyPairCredentials,
     MariaDbAttributes,
     MsSqlAttributes,
     MySqlAttributes,
@@ -41,6 +42,7 @@ from gooddata_sdk import (
     TokenCredentialsFromFile,
     VerticaAttributes,
 )
+from gooddata_sdk.catalog.data_source.entity_model.data_source import DatabaseAttributes
 from tests_support.file_utils import load_json
 from tests_support.vcrpy_utils import get_vcr
 
@@ -108,7 +110,7 @@ def test_scan_pdm_and_generate_logical_model(test_config: dict):
     assert len(declarative_model.ldm.date_instances) == len(generated_declarative_model.ldm.date_instances)
 
 
-def build_pdm_sql_datasets() -> List[CatalogPdmSql]:
+def build_pdm_sql_datasets() -> list[CatalogPdmSql]:
     return [
         # Test sql-dataset specific attributes, facts, references
         CatalogPdmSql(
@@ -218,8 +220,6 @@ def _create_default_data_source(sdk: GoodDataSdk, data_source_id: str = "test"):
             username="demouser",
             password="demopass",
         ),
-        enable_caching=True,
-        cache_path=["cache_schema"],
         url_params=[("autosave", "true")],
     )
     sdk.catalog_data_source.create_or_update_data_source(data_source=expected_data_source)
@@ -227,7 +227,7 @@ def _create_default_data_source(sdk: GoodDataSdk, data_source_id: str = "test"):
     assert expected_data_source == data_source
 
 
-def _get_data_source(data_sources: List[CatalogDataSource], data_source_id: str) -> Optional[CatalogDataSource]:
+def _get_data_source(data_sources: list[CatalogDataSource], data_source_id: str) -> Optional[CatalogDataSource]:
     for data_source in data_sources:
         if data_source.id == data_source_id:
             return data_source
@@ -254,7 +254,6 @@ def test_catalog_create_update_list_data_source(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("autosave", "false")],
         )
         sdk.catalog_data_source.create_or_update_data_source(updated_data_source)
@@ -296,7 +295,6 @@ def test_catalog_create_data_source_redshift_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("autosave", "true")],
         ),
     )
@@ -316,7 +314,6 @@ def test_catalog_create_data_source_vertica_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("TLSmode", "false")],
         ),
     )
@@ -336,8 +333,22 @@ def test_catalog_create_data_source_snowflake_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=True,
-            cache_path=["cache_schema"],
+            url_params=[("useProxy", "true")],
+        ),
+    )
+
+    _create_delete_ds(
+        sdk=sdk,
+        data_source=CatalogDataSourceSnowflake(
+            id="test",
+            name="Test",
+            db_specific_attributes=SnowflakeAttributes(account="gooddata", warehouse="TIGER", db_name="TIGER"),
+            schema="demo",
+            credentials=KeyPairCredentials(
+                username="demouser",
+                private_key="private_key",
+                private_key_passphrase="private_key_passphrase",
+            ),
             url_params=[("useProxy", "true")],
         ),
     )
@@ -354,8 +365,6 @@ def test_catalog_create_data_source_bigquery_spec(test_config):
                 name="Test",
                 schema="demo",
                 credentials=TokenCredentialsFromFile(file_path=Path("credentials") / "bigquery_service_account.json"),
-                enable_caching=True,
-                cache_path=["cache_schema"],
                 parameters=[{"name": "projectId", "value": "abc"}],
             ),
         )
@@ -379,8 +388,6 @@ def test_catalog_create_data_source_dremio_spec(test_config):
                 password="demopass",
             ),
             schema="",
-            enable_caching=True,
-            cache_path=["$scratch"],
         ),
     )
 
@@ -640,69 +647,27 @@ def test_catalog_create_data_source_greenplum_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=True,
-            cache_path=["cache_schema"],
             url_params=[("autosave", "true")],
         ),
     )
 """
 
 
-def test_postgres_url_creation(test_config):
-    data_source = CatalogDataSourcePostgres(
-        id="test",
-        name="Test",
-        db_specific_attributes=PostgresAttributes(host="localhost", db_name="demo"),
-        schema="demo",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demopass",
-        ),
-        enable_caching=True,
-        cache_path=["cache_schema"],
-        url_params=[("autosave", "true")],
-    )
-    assert data_source.url == "jdbc:postgresql://localhost:5432/demo?autosave=true"
-
-
-def test_snowflake_url_creation(test_config):
-    data_source = CatalogDataSourceSnowflake(
-        id="test",
-        name="Test",
-        db_specific_attributes=SnowflakeAttributes(account="gooddata", warehouse="TIGER", db_name="TIGER"),
-        schema="demo",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demopass",
-        ),
-        enable_caching=True,
-        cache_path=["cache_schema"],
-        url_params=[("useProxy", "true")],
-    )
-    assert (
-        data_source.url == "jdbc:snowflake://gooddata.snowflakecomputing.com:443?warehouse=TIGER&db=TIGER&useProxy=true"
-    )
-
-
 def test_allowed_data_source_type(test_config):
     allowed_types = JsonApiDataSourceInAttributes.allowed_values.get(("type",))
     for t in allowed_types.values():
-        try:
-            CatalogDataSource(
-                id="test",
-                name="Test2",
-                type=t,
-                url="jdbc:postgresql://localhost:5432/demo",
-                schema="demo",
-                credentials=BasicCredentials(
-                    username="demouser",
-                    password="demopass",
-                ),
-                enable_caching=False,
-                url_params=[("param", "value")],
-            )
-        except ValueError:
-            assert False, f"ValueError was raised for valid database type {t}"
+        CatalogDataSource(
+            id="test",
+            name="Test2",
+            type=t,
+            url="jdbc:postgresql://localhost:5432/demo",
+            schema="demo",
+            credentials=BasicCredentials(
+                username="demouser",
+                password="demopass",
+            ),
+            url_params=[("param", "value")],
+        )
     db_type = "nonsense"
     try:
         CatalogDataSource(
@@ -715,7 +680,6 @@ def test_allowed_data_source_type(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("param", "value")],
         )
     except ValueError:
@@ -724,58 +688,71 @@ def test_allowed_data_source_type(test_config):
         assert False, "ValueError was not raised for nonsense database type"
 
 
-def test_catalog_data_source_mssql(test_config):
-    data_source = CatalogDataSourceMsSql(
+@pytest.mark.parametrize(
+    "db_class,attributes,url,parameters,url_params",
+    [
+        (
+            CatalogDataSourceMsSql,
+            MsSqlAttributes(host="Host", db_name="DbName"),
+            "jdbc:sqlserver://Host:1433;databaseName=DbName",
+            None,
+            None,
+        ),
+        (
+            CatalogDataSourceDatabricks,
+            DatabricksAttributes(host="Host", http_path="xyz123abc"),
+            "jdbc:databricks://Host:443/default;httpPath=xyz123abc",
+            [{"name": "catalog", "value": "super_catalog"}],
+            None,
+        ),
+        (
+            CatalogDataSourceMySql,
+            MySqlAttributes(host="localhost", port="3306"),
+            "jdbc:mysql://localhost:3306/my_schema",
+            None,
+            None,
+        ),
+        (
+            CatalogDataSourceMariaDb,
+            MariaDbAttributes(host="localhost", port="3306"),
+            "jdbc:mariadb://localhost:3306/my_schema",
+            None,
+            None,
+        ),
+        (
+            CatalogDataSourcePostgres,
+            PostgresAttributes(host="localhost", db_name="demo"),
+            "jdbc:postgresql://localhost:5432/demo?autosave=true",
+            None,
+            [("autosave", "true")],
+        ),
+        (
+            CatalogDataSourceSnowflake,
+            SnowflakeAttributes(account="gooddata", warehouse="TIGER", db_name="TIGER"),
+            "jdbc:snowflake://gooddata.snowflakecomputing.com:443?warehouse=TIGER&db=TIGER&useProxy=true",
+            None,
+            [("useProxy", "true")],
+        ),
+    ],
+)
+def test_jdbc_urls_creation(
+    db_class: type[CatalogDataSource],
+    attributes: type[DatabaseAttributes],
+    url: str,
+    parameters: Optional[list],
+    url_params: Optional[list],
+):
+    db_class: type[CatalogDataSource] = db_class
+    data_source = db_class(
         id="test",
         name="Test",
-        db_specific_attributes=MsSqlAttributes(host="Host", db_name="DbName"),
-        schema="Schema",
+        db_specific_attributes=attributes,
+        parameters=parameters,
+        schema="my_schema",
+        url_params=url_params,
         credentials=BasicCredentials(
             username="demouser",
             password="demopass",
         ),
     )
-    assert data_source.url == "jdbc:sqlserver://Host:1433;databaseName=DbName"
-
-
-def test_catalog_data_source_databricks(test_config):
-    data_source = CatalogDataSourceDatabricks(
-        id="test",
-        name="Test",
-        db_specific_attributes=DatabricksAttributes(host="Host", http_path="xyz123abc"),
-        schema="SCHEMA",
-        parameters=[{"name": "catalog", "value": "super_catalog"}],
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demospass",
-        ),
-    )
-    assert data_source.url == "jdbc:databricks://Host:443/default;httpPath=xyz123abc"
-
-
-def test_catalog_data_source_mysql(test_config):
-    data_source = CatalogDataSourceMySql(
-        id="test",
-        name="Test",
-        db_specific_attributes=MySqlAttributes(host="localhost", port="3306"),
-        schema="my_schema",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demospass",
-        ),
-    )
-    assert data_source.url == "jdbc:mysql://localhost:3306/my_schema"
-
-
-def test_catalog_data_source_mariadb(test_config):
-    data_source = CatalogDataSourceMariaDb(
-        id="test",
-        name="Test",
-        db_specific_attributes=MariaDbAttributes(host="localhost", port="3306"),
-        schema="my_schema",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demospass",
-        ),
-    )
-    assert data_source.url == "jdbc:mariadb://localhost:3306/my_schema"
+    assert data_source.url == url

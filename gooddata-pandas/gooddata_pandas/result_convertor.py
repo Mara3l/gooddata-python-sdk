@@ -1,14 +1,14 @@
 # (C) 2022 GoodData Corporation
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Optional, Union, cast
 
 import pandas
 from attrs import define, field, frozen
 from gooddata_sdk import BareExecutionResponse, ExecutionResult, ResultCacheMetadata, ResultSizeDimensions
 
 _DEFAULT_PAGE_SIZE = 100
-_DataHeaders = List[List[Any]]
-_DataArray = List[Union[int, None]]
-LabelOverrides = Dict[str, Dict[str, Dict[str, str]]]
+_DataHeaders = list[list[Any]]
+_DataArray = list[Union[int, None]]
+LabelOverrides = dict[str, dict[str, dict[str, str]]]
 
 
 @frozen
@@ -26,10 +26,10 @@ class _DataWithHeaders:
             Per-dimension grand total headers.
     """
 
-    data: List[_DataArray]
-    data_headers: Tuple[_DataHeaders, Optional[_DataHeaders]]
-    grand_totals: Tuple[Optional[List[_DataArray]], Optional[List[_DataArray]]]
-    grand_total_headers: Tuple[Optional[List[Dict[str, _DataHeaders]]], Optional[List[Dict[str, _DataHeaders]]]]
+    data: list[_DataArray]
+    data_headers: tuple[_DataHeaders, Optional[_DataHeaders]]
+    grand_totals: tuple[Optional[list[_DataArray]], Optional[list[_DataArray]]]
+    grand_total_headers: tuple[Optional[list[dict[str, _DataHeaders]]], Optional[list[dict[str, _DataHeaders]]]]
 
 
 @define
@@ -46,10 +46,10 @@ class _AccumulatedData:
         grand_totals_headers (List[Optional[_DataHeaders]]): Holds the headers for grand total data arrays.
     """
 
-    data: List[_DataArray] = field(init=False, factory=list)
-    data_headers: List[Optional[_DataHeaders]] = field(init=False, factory=lambda: [None, None])
-    grand_totals: List[Optional[List[_DataArray]]] = field(init=False, factory=lambda: [None, None])
-    grand_totals_headers: List[Optional[List[Dict[str, _DataHeaders]]]] = field(
+    data: list[_DataArray] = field(init=False, factory=list)
+    data_headers: list[Optional[_DataHeaders]] = field(init=False, factory=lambda: [None, None])
+    grand_totals: list[Optional[list[_DataArray]]] = field(init=False, factory=lambda: [None, None])
+    grand_totals_headers: list[Optional[list[dict[str, _DataHeaders]]]] = field(
         init=False, factory=lambda: [None, None]
     )
     total_of_grant_totals_processed: bool = field(init=False, default=False)
@@ -125,7 +125,7 @@ class _AccumulatedData:
             # if dims are empty then data contain total of column and row grandtotals so extend existing data array
             if len(dims) == 0:
                 if not self.total_of_grant_totals_processed:
-                    grand_totals_item = cast(List[_DataArray], self.grand_totals[0])
+                    grand_totals_item = cast(list[_DataArray], self.grand_totals[0])
                     for total_idx, total_data in enumerate(grand_total["data"]):
                         grand_totals_item[total_idx].extend(total_data)
                     self.total_of_grant_totals_processed = True
@@ -151,7 +151,7 @@ class _AccumulatedData:
                 # grand totals are already initialized and the code is paging in the direction that reveals
                 # additional grand total values; append them accordingly; no need to consider total headers:
                 # that is because only the grand total data is subject to paging
-                grand_totals_item = cast(List[_DataArray], self.grand_totals[opposite_dim])
+                grand_totals_item = cast(list[_DataArray], self.grand_totals[opposite_dim])
                 if opposite_dim == 0:
                     # have column totals and paging 'to the right'; totals for the new columns are revealed so
                     # extend existing data arrays
@@ -198,14 +198,18 @@ class DataFrameMetadata:
                           execution response.
     """
 
-    row_totals_indexes: List[List[int]]
+    row_totals_indexes: list[list[int]]
     execution_response: BareExecutionResponse
+    primary_labels_from_index: dict[int, dict[str, str]]
+    primary_labels_from_columns: dict[int, dict[str, str]]
 
     @classmethod
     def from_data(
         cls,
-        headers: Tuple[_DataHeaders, Optional[_DataHeaders]],
+        headers: tuple[_DataHeaders, Optional[_DataHeaders]],
         execution_response: BareExecutionResponse,
+        primary_labels_from_index: dict[int, dict[str, str]],
+        primary_labels_from_columns: dict[int, dict[str, str]],
     ) -> "DataFrameMetadata":
         """This method constructs a DataFrameMetadata object from data headers and an execution response.
 
@@ -219,6 +223,8 @@ class DataFrameMetadata:
         return cls(
             row_totals_indexes=row_totals_indexes,
             execution_response=execution_response,
+            primary_labels_from_index=primary_labels_from_index,
+            primary_labels_from_columns=primary_labels_from_columns,
         )
 
 
@@ -304,6 +310,7 @@ def _read_complete_execution_result(
 def _create_header_mapper(
     response: BareExecutionResponse,
     dim: int,
+    primary_attribute_labels_mapping: dict[int, dict[str, str]],
     label_overrides: Optional[LabelOverrides] = None,
     use_local_ids_in_headers: bool = False,
     use_primary_labels_in_attributes: bool = False,
@@ -315,6 +322,8 @@ def _create_header_mapper(
     Args:
         response (BareExecutionResponse): Response structure to gather dimension header details.
         dim (int): Dimension id.
+        primary_attribute_labels_mapping (Dict[int, Dict[str, str]]): Dict to be filled by mapping of primary labels to
+            custom labels per level identified by integer.
         label_overrides (Optional[LabelOverrides]): Label overrides. Defaults to None.
         use_local_ids_in_headers (bool): Use local identifiers of header attributes and metrics. Optional.
             Defaults to False.
@@ -336,10 +345,14 @@ def _create_header_mapper(
             pass
         elif "attributeHeader" in header:
             if "labelValue" in header["attributeHeader"]:
-                if use_primary_labels_in_attributes:
-                    label = header["attributeHeader"]["primaryLabelValue"]
-                else:
-                    label = header["attributeHeader"]["labelValue"]
+                label_value = header["attributeHeader"]["labelValue"]
+                primary_label_value = header["attributeHeader"]["primaryLabelValue"]
+                label = primary_label_value if use_primary_labels_in_attributes else label_value
+                if header_idx is not None:
+                    if header_idx in primary_attribute_labels_mapping:
+                        primary_attribute_labels_mapping[header_idx][primary_label_value] = label_value
+                    else:
+                        primary_attribute_labels_mapping[header_idx] = {primary_label_value: label_value}
                 # explicitly handle '(empty value)' if it's None otherwise it's not recognizable in final MultiIndex
                 # backend represents ^^^ by "" (datasource value is "") or None (datasource value is NULL) therefore
                 # if both representation are used it's necessary to set label to unique header label (space) to avoid
@@ -377,12 +390,12 @@ def _create_header_mapper(
 
 def _headers_to_index(
     dim_idx: int,
-    headers: Tuple[_DataHeaders, Optional[_DataHeaders]],
+    headers: tuple[_DataHeaders, Optional[_DataHeaders]],
     response: BareExecutionResponse,
     label_overrides: LabelOverrides,
     use_local_ids_in_headers: bool = False,
     use_primary_labels_in_attributes: bool = False,
-) -> Optional[pandas.Index]:
+) -> tuple[Optional[pandas.Index], dict[int, dict[str, str]]]:
     """Converts headers to a pandas MultiIndex.
 
     This function converts the headers present in the response to a pandas MultiIndex (can be used in pandas dataframes)
@@ -398,10 +411,14 @@ def _headers_to_index(
             Defaults to False.
 
     Returns:
-        Optional[pandas.Index]: A pandas MultiIndex object created from the headers, or None if the headers are empty.
+        Tuple[Optional[pandas.Index], Dict[int, Dict[str, str]]: A pandas MultiIndex object created from the headers
+        with primary attribute labels mapping as Dict, or None with empty Dict if the headers are empty.
     """
+    # dict of primary labels and it's custom labels for attributes per level as key
+    primary_attribute_labels_mapping: dict[int, dict[str, str]] = {}
+
     if len(response.dimensions) <= dim_idx or not len(response.dimensions[dim_idx]["headers"]):
-        return None
+        return None, primary_attribute_labels_mapping
 
     mapper = _create_header_mapper(
         response=response,
@@ -409,6 +426,7 @@ def _headers_to_index(
         label_overrides=label_overrides,
         use_local_ids_in_headers=use_local_ids_in_headers,
         use_primary_labels_in_attributes=use_primary_labels_in_attributes,
+        primary_attribute_labels_mapping=primary_attribute_labels_mapping,
     )
 
     return pandas.MultiIndex.from_arrays(
@@ -417,10 +435,10 @@ def _headers_to_index(
             for header_idx, header_group in enumerate(cast(_DataHeaders, headers[dim_idx]))
         ],
         names=[mapper(dim_header, None) for dim_header in (response.dimensions[dim_idx]["headers"])],
-    )
+    ), primary_attribute_labels_mapping
 
 
-def _merge_grand_totals_into_data(extract: _DataWithHeaders) -> Union[_DataArray, List[_DataArray]]:
+def _merge_grand_totals_into_data(extract: _DataWithHeaders) -> Union[_DataArray, list[_DataArray]]:
     """
     Merges grand totals into the extracted data. This function will mutate the extracted data,
     extending the rows and columns with grand totals. Going with mutation here so as not to copy arrays around.
@@ -431,7 +449,7 @@ def _merge_grand_totals_into_data(extract: _DataWithHeaders) -> Union[_DataArray
     Returns:
         Union[_DataArray, List[_DataArray]]: Mutated data with rows and columns extended with grand totals.
     """
-    data: List[_DataArray] = extract.data
+    data: list[_DataArray] = extract.data
 
     if extract.grand_totals[0] is not None:
         # column totals are computed into extra rows, one row per column total
@@ -447,7 +465,7 @@ def _merge_grand_totals_into_data(extract: _DataWithHeaders) -> Union[_DataArray
     return data
 
 
-def _merge_grand_total_headers_into_headers(extract: _DataWithHeaders) -> Tuple[_DataHeaders, Optional[_DataHeaders]]:
+def _merge_grand_total_headers_into_headers(extract: _DataWithHeaders) -> tuple[_DataHeaders, Optional[_DataHeaders]]:
     """Merges grand total headers into data headers. This function will mutate the extracted data.
 
     Args:
@@ -457,12 +475,12 @@ def _merge_grand_total_headers_into_headers(extract: _DataWithHeaders) -> Tuple[
         Tuple[_DataHeaders, Optional[_DataHeaders]]:
             A tuple containing the modified data headers and the grand total headers if present.
     """
-    headers: Tuple[_DataHeaders, Optional[_DataHeaders]] = extract.data_headers
+    headers: tuple[_DataHeaders, Optional[_DataHeaders]] = extract.data_headers
 
     for dim_idx, grand_total_headers in enumerate(extract.grand_total_headers):
         if grand_total_headers is None:
             continue
-        header = cast(List[List[Any]], headers[dim_idx])
+        header = cast(list[list[Any]], headers[dim_idx])
         for level, grand_total_header in enumerate(grand_total_headers):
             header[level].extend(grand_total_header["headers"])
 
@@ -478,7 +496,7 @@ def convert_execution_response_to_dataframe(
     use_local_ids_in_headers: bool = False,
     use_primary_labels_in_attributes: bool = False,
     page_size: int = _DEFAULT_PAGE_SIZE,
-) -> Tuple[pandas.DataFrame, DataFrameMetadata]:
+) -> tuple[pandas.DataFrame, DataFrameMetadata]:
     """
     Converts execution result to a pandas dataframe, maintaining the dimensionality of the result.
 
@@ -507,24 +525,33 @@ def convert_execution_response_to_dataframe(
     full_data = _merge_grand_totals_into_data(extract)
     full_headers = _merge_grand_total_headers_into_headers(extract)
 
-    df = pandas.DataFrame(
-        data=full_data,
-        index=_headers_to_index(
-            dim_idx=0,
-            headers=full_headers,
-            response=execution_response,
-            label_overrides=label_overrides,
-            use_local_ids_in_headers=use_local_ids_in_headers,
-            use_primary_labels_in_attributes=use_primary_labels_in_attributes,
-        ),
-        columns=_headers_to_index(
-            dim_idx=1,
-            headers=full_headers,
-            response=execution_response,
-            label_overrides=label_overrides,
-            use_local_ids_in_headers=use_local_ids_in_headers,
-            use_primary_labels_in_attributes=use_primary_labels_in_attributes,
-        ),
+    index, primary_labels_from_index = _headers_to_index(
+        dim_idx=0,
+        headers=full_headers,
+        response=execution_response,
+        label_overrides=label_overrides,
+        use_local_ids_in_headers=use_local_ids_in_headers,
+        use_primary_labels_in_attributes=use_primary_labels_in_attributes,
     )
 
-    return df, DataFrameMetadata.from_data(headers=full_headers, execution_response=execution_response)
+    columns, primary_labels_from_columns = _headers_to_index(
+        dim_idx=1,
+        headers=full_headers,
+        response=execution_response,
+        label_overrides=label_overrides,
+        use_local_ids_in_headers=use_local_ids_in_headers,
+        use_primary_labels_in_attributes=use_primary_labels_in_attributes,
+    )
+
+    df = pandas.DataFrame(
+        data=full_data,
+        index=index,
+        columns=columns,
+    )
+
+    return df, DataFrameMetadata.from_data(
+        headers=full_headers,
+        execution_response=execution_response,
+        primary_labels_from_index=primary_labels_from_index,
+        primary_labels_from_columns=primary_labels_from_columns,
+    )

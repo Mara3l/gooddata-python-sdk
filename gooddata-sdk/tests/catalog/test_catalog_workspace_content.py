@@ -407,6 +407,28 @@ def test_label_elements(test_config):
         test_config["workspace"], "order_status", [depends_on_date_relative], []
     )
     assert label_values == []
+    exact_filter = None
+    filter_by = None
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "order_status", [depends_on], [], exact_filter, filter_by
+    )
+    assert label_values == ["Canceled", "Delivered"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", pattern_filter="Deli"
+    )
+    assert label_values == ["Delivered"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", pattern_filter="Deli", complement_filter=True
+    )
+    assert label_values == ["Canceled", "Returned"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", sort_order="DESC"
+    )
+    assert label_values == ["Returned", "Delivered", "Canceled"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", offset=1, limit=1
+    )
+    assert label_values == ["Delivered"]
 
 
 @gd_vcr.use_cassette(str(_fixtures_dir / "explicit_workspace_data_filter.yaml"))

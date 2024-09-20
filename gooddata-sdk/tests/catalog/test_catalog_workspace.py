@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import List
+from xml.etree import ElementTree as ET
 
 import yaml
 from gooddata_sdk import (
@@ -661,7 +661,6 @@ def create_second_data_source(sdk: GoodDataSdk, ds_id: str) -> None:
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("autosave", "false")],
         )
     )
@@ -709,7 +708,7 @@ def test_clone_workspace(test_config):
         delete_data_source(sdk, test_config["data_source2"])
 
 
-def _translate_batch(to_translate: List[str]) -> List[str]:
+def _translate_batch(to_translate: list[str]) -> list[str]:
     return [("Rozpočet" if x == "Budget" else x) for x in to_translate]
 
 
@@ -840,3 +839,82 @@ def test_update_workspace_setting(test_config):
     finally:
         sdk.catalog_workspace.delete_workspace_setting(test_config["workspace"], setting_id)
         assert len(sdk.catalog_workspace.list_workspace_settings(test_config["workspace"])) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "get_metadata_localization.yaml"))
+def test_get_metadata_localization(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+    xliff = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    tree = ET.ElementTree(ET.fromstring(xliff))
+
+    # Check, if the returned xliff is valid.
+    assert tree is not None
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "set_metadata_localization.yaml"))
+def test_set_metadata_localization(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+    xliff = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.set_metadata_localization(workspace_id=test_workspace, encoded_xml=xliff)
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "add_metadata_locale.yaml"))
+def test_add_metadata_locale(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+
+    def translate(
+        to_translate: str,
+        already_translated: bool = False,
+        old_translation: str = "",
+    ):
+        return f"{to_translate}."
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    xliff_before = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.add_metadata_locale(
+        workspace_id=test_workspace, target_language="fr-FR", translator_func=translate, set_locale=False
+    )
+
+    xliff_after = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    assert xliff_before != xliff_after
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "clean_metadata_locale.yaml"))
+def test_clean_metadata_locale(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+
+    def translate(
+        to_translate: str,
+        already_translated: bool = False,
+        old_translation: str = "",
+    ):
+        return f"{to_translate}."
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    xliff_before = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.add_metadata_locale(
+        workspace_id=test_workspace, target_language="fr-FR", translator_func=translate, set_locale=False
+    )
+
+    xliff_after = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    assert xliff_before != xliff_after
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    xliff_after = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    assert xliff_before == xliff_after

@@ -1,7 +1,7 @@
 # (C) 2023 GoodData Corporation
 import json
 import re
-from typing import List, Optional
+from typing import Optional
 
 import attrs
 from gooddata_sdk import CatalogDeclarativeMetric, CatalogDeclarativeModel
@@ -49,21 +49,19 @@ class DbtModelMetric(DbtModelBase):
     model: str
     calculation_method: str
     expression: str
-    filters: Optional[List[DbtModelMetricFilter]] = None
+    filters: Optional[list[DbtModelMetricFilter]] = None
 
 
 class DbtModelMetrics:
-    def __init__(self, model_ids: Optional[List[str]], ldm: CatalogDeclarativeModel) -> None:
+    def __init__(self, model_ids: Optional[list[str]], ldm: CatalogDeclarativeModel) -> None:
         self.model_ids = model_ids
         self.ldm = ldm
         with open(DBT_PATH_TO_MANIFEST) as fp:
             self.dbt_catalog = json.load(fp)
 
     @property
-    def metrics(self) -> List[DbtModelMetric]:
-        result = []
-        for metric_def in self.dbt_catalog["metrics"].values():
-            result.append(DbtModelMetric.from_dict(metric_def))
+    def metrics(self) -> list[DbtModelMetric]:
+        result = [DbtModelMetric.from_dict(metric_def) for metric_def in self.dbt_catalog["metrics"].values()]
         # Return only gooddata labelled tables marked by model_id (if requested in args)
         return [
             r
@@ -127,7 +125,7 @@ class DbtModelMetrics:
             result_tokens.append(entity_id or token)
         return " ".join(result_tokens)
 
-    def make_gooddata_filter(self, table_name: str, dbt_filters: Optional[List[DbtModelMetricFilter]] = None) -> str:
+    def make_gooddata_filter(self, table_name: str, dbt_filters: Optional[list[DbtModelMetricFilter]] = None) -> str:
         # TODO - Quite naive implementation
         #    e.g. missing polishing of values (e.g. SQL vs MAQL enclosers)
         gd_maql_filters = []
@@ -141,7 +139,7 @@ class DbtModelMetrics:
         else:
             return ""
 
-    def make_gooddata_metrics(self) -> List[CatalogDeclarativeMetric]:
+    def make_gooddata_metrics(self) -> list[CatalogDeclarativeMetric]:
         gd_metrics = []
         for dbt_metric in self.metrics:
             calculation_method = DBT_TO_GD_CALC_METHODS.get(dbt_metric.calculation_method)
