@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Optional, Union
 
 import attrs
-from gooddata_sdk import CatalogDeclarativeColumn, CatalogDeclarativeTable, CatalogDeclarativeTables
+from gooddata_sdk import (
+    CatalogDeclarativeColumn,
+    CatalogDeclarativeTable,
+    CatalogDeclarativeTables,
+)
 from gooddata_sdk.utils import safeget
 
 from gooddata_dbt.dbt.base import (
@@ -220,7 +224,10 @@ class DbtModelTables:
 
     @classmethod
     def from_local(
-        cls, upper_case: bool, all_model_ids: list[str], manifest_path: Union[str, Path] = DBT_PATH_TO_MANIFEST
+        cls,
+        upper_case: bool,
+        all_model_ids: list[str],
+        manifest_path: Union[str, Path] = DBT_PATH_TO_MANIFEST,
     ) -> "DbtModelTables":
         with open(manifest_path) as fp:
             dbt_catalog = json.load(fp)
@@ -363,8 +370,13 @@ class DbtModelTables:
                     {
                         "identifier": {"id": referenced_object_id, "type": "dataset"},
                         "multivalue": False,
-                        "source_columns": [column.name],
-                        "source_column_data_types": [column.data_type],
+                        "sources": [
+                            {
+                                "column": column.name,
+                                "dataType": [column.data_type],
+                                "target": {"id": column.ldm_id, "type": "attribute"},
+                            },
+                        ],
                     }
                 )
         return references
@@ -461,7 +473,13 @@ class DbtModelTables:
                 )
         return date_datasets
 
-    def make_dataset(self, data_source_id: str, table: DbtModelTable, role_playing_tables: dict, result: dict) -> dict:
+    def make_dataset(
+        self,
+        data_source_id: str,
+        table: DbtModelTable,
+        role_playing_tables: dict,
+        result: dict,
+    ) -> dict:
         grain = self.make_grain(table)
         references = self.make_references(table, role_playing_tables)
         facts = self.make_facts(table)
