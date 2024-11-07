@@ -54,6 +54,7 @@ class ExportDefinitionsApi(object):
                     'workspace_id',
                     'json_api_export_definition_post_optional_id_document',
                     'include',
+                    'meta_include',
                 ],
                 'required': [
                     'workspace_id',
@@ -63,21 +64,36 @@ class ExportDefinitionsApi(object):
                 ],
                 'enum': [
                     'include',
+                    'meta_include',
                 ],
                 'validation': [
+                    'meta_include',
                 ]
             },
             root_map={
                 'validations': {
+                    ('meta_include',): {
+
+                    },
                 },
                 'allowed_values': {
                     ('include',): {
 
                         "VISUALIZATIONOBJECTS": "visualizationObjects",
+                        "ANALYTICALDASHBOARDS": "analyticalDashboards",
+                        "AUTOMATIONS": "automations",
                         "USERIDENTIFIERS": "userIdentifiers",
                         "VISUALIZATIONOBJECT": "visualizationObject",
+                        "ANALYTICALDASHBOARD": "analyticalDashboard",
+                        "AUTOMATION": "automation",
                         "CREATEDBY": "createdBy",
                         "MODIFIEDBY": "modifiedBy",
+                        "ALL": "ALL"
+                    },
+                    ('meta_include',): {
+
+                        "ORIGIN": "origin",
+                        "ALL": "all",
                         "ALL": "ALL"
                     },
                 },
@@ -88,18 +104,23 @@ class ExportDefinitionsApi(object):
                         (JsonApiExportDefinitionPostOptionalIdDocument,),
                     'include':
                         ([str],),
+                    'meta_include':
+                        ([str],),
                 },
                 'attribute_map': {
                     'workspace_id': 'workspaceId',
                     'include': 'include',
+                    'meta_include': 'metaInclude',
                 },
                 'location_map': {
                     'workspace_id': 'path',
                     'json_api_export_definition_post_optional_id_document': 'body',
                     'include': 'query',
+                    'meta_include': 'query',
                 },
                 'collection_format_map': {
                     'include': 'csv',
+                    'meta_include': 'csv',
                 }
             },
             headers_map={
@@ -221,14 +242,19 @@ class ExportDefinitionsApi(object):
                     ('include',): {
 
                         "VISUALIZATIONOBJECTS": "visualizationObjects",
+                        "ANALYTICALDASHBOARDS": "analyticalDashboards",
+                        "AUTOMATIONS": "automations",
                         "USERIDENTIFIERS": "userIdentifiers",
                         "VISUALIZATIONOBJECT": "visualizationObject",
+                        "ANALYTICALDASHBOARD": "analyticalDashboard",
+                        "AUTOMATION": "automation",
                         "CREATEDBY": "createdBy",
                         "MODIFIEDBY": "modifiedBy",
                         "ALL": "ALL"
                     },
                     ('meta_include',): {
 
+                        "ORIGIN": "origin",
                         "PAGE": "page",
                         "ALL": "all",
                         "ALL": "ALL"
@@ -306,6 +332,7 @@ class ExportDefinitionsApi(object):
                     'filter',
                     'include',
                     'x_gdc_validate_relations',
+                    'meta_include',
                 ],
                 'required': [
                     'workspace_id',
@@ -315,21 +342,36 @@ class ExportDefinitionsApi(object):
                 ],
                 'enum': [
                     'include',
+                    'meta_include',
                 ],
                 'validation': [
+                    'meta_include',
                 ]
             },
             root_map={
                 'validations': {
+                    ('meta_include',): {
+
+                    },
                 },
                 'allowed_values': {
                     ('include',): {
 
                         "VISUALIZATIONOBJECTS": "visualizationObjects",
+                        "ANALYTICALDASHBOARDS": "analyticalDashboards",
+                        "AUTOMATIONS": "automations",
                         "USERIDENTIFIERS": "userIdentifiers",
                         "VISUALIZATIONOBJECT": "visualizationObject",
+                        "ANALYTICALDASHBOARD": "analyticalDashboard",
+                        "AUTOMATION": "automation",
                         "CREATEDBY": "createdBy",
                         "MODIFIEDBY": "modifiedBy",
+                        "ALL": "ALL"
+                    },
+                    ('meta_include',): {
+
+                        "ORIGIN": "origin",
+                        "ALL": "all",
                         "ALL": "ALL"
                     },
                 },
@@ -344,6 +386,8 @@ class ExportDefinitionsApi(object):
                         ([str],),
                     'x_gdc_validate_relations':
                         (bool,),
+                    'meta_include':
+                        ([str],),
                 },
                 'attribute_map': {
                     'workspace_id': 'workspaceId',
@@ -351,6 +395,7 @@ class ExportDefinitionsApi(object):
                     'filter': 'filter',
                     'include': 'include',
                     'x_gdc_validate_relations': 'X-GDC-VALIDATE-RELATIONS',
+                    'meta_include': 'metaInclude',
                 },
                 'location_map': {
                     'workspace_id': 'path',
@@ -358,9 +403,11 @@ class ExportDefinitionsApi(object):
                     'filter': 'query',
                     'include': 'query',
                     'x_gdc_validate_relations': 'header',
+                    'meta_include': 'query',
                 },
                 'collection_format_map': {
                     'include': 'csv',
+                    'meta_include': 'csv',
                 }
             },
             headers_map={
@@ -408,8 +455,12 @@ class ExportDefinitionsApi(object):
                     ('include',): {
 
                         "VISUALIZATIONOBJECTS": "visualizationObjects",
+                        "ANALYTICALDASHBOARDS": "analyticalDashboards",
+                        "AUTOMATIONS": "automations",
                         "USERIDENTIFIERS": "userIdentifiers",
                         "VISUALIZATIONOBJECT": "visualizationObject",
+                        "ANALYTICALDASHBOARD": "analyticalDashboard",
+                        "AUTOMATION": "automation",
                         "CREATEDBY": "createdBy",
                         "MODIFIEDBY": "modifiedBy",
                         "ALL": "ALL"
@@ -491,8 +542,12 @@ class ExportDefinitionsApi(object):
                     ('include',): {
 
                         "VISUALIZATIONOBJECTS": "visualizationObjects",
+                        "ANALYTICALDASHBOARDS": "analyticalDashboards",
+                        "AUTOMATIONS": "automations",
                         "USERIDENTIFIERS": "userIdentifiers",
                         "VISUALIZATIONOBJECT": "visualizationObject",
+                        "ANALYTICALDASHBOARD": "analyticalDashboard",
+                        "AUTOMATION": "automation",
                         "CREATEDBY": "createdBy",
                         "MODIFIEDBY": "modifiedBy",
                         "ALL": "ALL"
@@ -558,6 +613,7 @@ class ExportDefinitionsApi(object):
 
         Keyword Args:
             include ([str]): Array of included collections or individual relationships. Includes are separated by commas (e.g. include=entity1s,entity2s). Collection include represents the inclusion of every relationship between this entity and the given collection. Relationship include represents the inclusion of the particular relationships only. If single parameter \"ALL\" is present, all possible includes are used (include=ALL).  __WARNING:__ Individual include types (collection, relationship or ALL) cannot be combined together.. [optional]
+            meta_include ([str]): Include Meta objects.. [optional]
             _return_http_data_only (bool): response data without head status
                 code and headers. Default is True.
             _preload_content (bool): if False, the urllib3.HTTPResponse object
@@ -824,6 +880,7 @@ class ExportDefinitionsApi(object):
             filter (str): Filtering parameter in RSQL. See https://github.com/jirutka/rsql-parser. You can specify any object parameter and parameter of related entity (for example title=='Some Title';description=='desc'). Additionally, if the entity relationship represents a polymorphic entity type, it can be casted to its subtypes (for example relatedEntity::subtype.subtypeProperty=='Value 123').. [optional]
             include ([str]): Array of included collections or individual relationships. Includes are separated by commas (e.g. include=entity1s,entity2s). Collection include represents the inclusion of every relationship between this entity and the given collection. Relationship include represents the inclusion of the particular relationships only. If single parameter \"ALL\" is present, all possible includes are used (include=ALL).  __WARNING:__ Individual include types (collection, relationship or ALL) cannot be combined together.. [optional]
             x_gdc_validate_relations (bool): [optional] if omitted the server will use the default value of False
+            meta_include ([str]): Include Meta objects.. [optional]
             _return_http_data_only (bool): response data without head status
                 code and headers. Default is True.
             _preload_content (bool): if False, the urllib3.HTTPResponse object

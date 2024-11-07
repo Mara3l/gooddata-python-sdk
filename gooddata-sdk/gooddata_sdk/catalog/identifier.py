@@ -1,11 +1,16 @@
 # (C) 2022 GoodData Corporation
 from __future__ import annotations
 
-from typing import Type
+import builtins
 
 import attr
+from attrs import define
 from gooddata_api_client.model.assignee_identifier import AssigneeIdentifier
 from gooddata_api_client.model.dataset_workspace_data_filter_identifier import DatasetWorkspaceDataFilterIdentifier
+from gooddata_api_client.model.declarative_export_definition_identifier import DeclarativeExportDefinitionIdentifier
+from gooddata_api_client.model.declarative_notification_channel_identifier import (
+    DeclarativeNotificationChannelIdentifier,
+)
 from gooddata_api_client.model.declarative_user_group_identifier import DeclarativeUserGroupIdentifier
 from gooddata_api_client.model.declarative_user_identifier import DeclarativeUserIdentifier
 from gooddata_api_client.model.grain_identifier import GrainIdentifier
@@ -21,7 +26,7 @@ class CatalogWorkspaceIdentifier(Base):
     id: str
 
     @staticmethod
-    def client_class() -> Type[WorkspaceIdentifier]:
+    def client_class() -> builtins.type[WorkspaceIdentifier]:
         return WorkspaceIdentifier
 
 
@@ -30,7 +35,7 @@ class CatalogReferenceIdentifier(Base):
     id: str
 
     @staticmethod
-    def client_class() -> Type[ReferenceIdentifier]:
+    def client_class() -> builtins.type[ReferenceIdentifier]:
         return ReferenceIdentifier
 
 
@@ -40,7 +45,7 @@ class CatalogGrainIdentifier(Base):
     type: str = attr.field(validator=value_in_allowed)
 
     @staticmethod
-    def client_class() -> Type[GrainIdentifier]:
+    def client_class() -> builtins.type[GrainIdentifier]:
         return GrainIdentifier
 
 
@@ -50,7 +55,7 @@ class CatalogAssigneeIdentifier(Base):
     type: str = attr.field(validator=value_in_allowed)
 
     @staticmethod
-    def client_class() -> Type[AssigneeIdentifier]:
+    def client_class() -> builtins.type[AssigneeIdentifier]:
         return AssigneeIdentifier
 
 
@@ -60,7 +65,7 @@ class CatalogDeclarativeUserGroupIdentifier(Base):
     type: str = attr.field(validator=value_in_allowed)
 
     @staticmethod
-    def client_class() -> Type[DeclarativeUserGroupIdentifier]:
+    def client_class() -> builtins.type[DeclarativeUserGroupIdentifier]:
         return DeclarativeUserGroupIdentifier
 
 
@@ -70,7 +75,7 @@ class CatalogUserIdentifier(Base):
     type: str = attr.field(validator=value_in_allowed)
 
     @staticmethod
-    def client_class() -> Type[DeclarativeUserIdentifier]:
+    def client_class() -> builtins.type[DeclarativeUserIdentifier]:
         return DeclarativeUserIdentifier
 
 
@@ -80,7 +85,7 @@ class CatalogLabelIdentifier(Base):
     type: str = attr.field(validator=value_in_allowed)
 
     @staticmethod
-    def client_class() -> Type[LabelIdentifier]:
+    def client_class() -> builtins.type[LabelIdentifier]:
         return LabelIdentifier
 
 
@@ -89,5 +94,23 @@ class CatalogDatasetWorkspaceDataFilterIdentifier(Base):
     id: str
 
     @staticmethod
-    def client_class() -> Type[DatasetWorkspaceDataFilterIdentifier]:
+    def client_class() -> builtins.type[DatasetWorkspaceDataFilterIdentifier]:
         return DatasetWorkspaceDataFilterIdentifier
+
+
+@define(auto_attribs=True, kw_only=True)
+class CatalogExportDefinitionIdentifier(Base):
+    id: str
+
+    @staticmethod
+    def client_class() -> builtins.type[DeclarativeExportDefinitionIdentifier]:
+        return DeclarativeExportDefinitionIdentifier
+
+
+@define(auto_attribs=True, kw_only=True)
+class CatalogNotificationChannelIdentifier(Base):
+    id: str
+
+    @staticmethod
+    def client_class() -> builtins.type[DeclarativeNotificationChannelIdentifier]:
+        return DeclarativeNotificationChannelIdentifier

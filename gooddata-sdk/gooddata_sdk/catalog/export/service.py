@@ -1,24 +1,18 @@
 # (C) 2023 GoodData Corporation
 import time
 from pathlib import Path
-from typing import Callable, Optional, Tuple, Union
-from warnings import warn
+from typing import Any, Callable, Optional, Union
 
 from gooddata_api_client.exceptions import NotFoundException
-from gooddata_api_client.model.pdf_export_request import PdfExportRequest
 from gooddata_api_client.model.tabular_export_request import TabularExportRequest
+from gooddata_api_client.model.visual_export_request import VisualExportRequest
 
 from gooddata_sdk.catalog.catalog_service_base import CatalogServiceBase
 from gooddata_sdk.catalog.export.request import (
-    ExportCustomLabel,
-    ExportCustomMetric,
-    ExportCustomOverride,
     ExportRequest,
     ExportSettings,
 )
 from gooddata_sdk.client import GoodDataApiClient
-from gooddata_sdk.compute.model.metric import SimpleMetric
-from gooddata_sdk.table import ExecutionTable, TableService
 from gooddata_sdk.visualization import VisualizationService
 
 
@@ -48,7 +42,7 @@ class ExportService(CatalogServiceBase):
     """
 
     def __init__(self, api_client: GoodDataApiClient) -> None:
-        super(ExportService, self).__init__(api_client)
+        super().__init__(api_client)
         """
         Initializes the ExportService with the GoodDataApiClient instance.
         Args:
@@ -101,13 +95,13 @@ class ExportService(CatalogServiceBase):
                     break
         if response.status != 200:
             raise ValueError(
-                f"Server was not able to return response. " f"The last response status is '{response.status}'."
+                f"Server was not able to return response. The last response status is '{response.status}'."
             )
         return response.data
 
     @staticmethod
     def _create_export(
-        workspace_id: str, request: Union[PdfExportRequest, TabularExportRequest], create_func: Callable
+        workspace_id: str, request: Union[VisualExportRequest, TabularExportRequest], create_func: Callable
     ) -> str:
         """
         Creates an export of the requested type (PDF or Tabular) in the specified Workspace.
@@ -146,7 +140,7 @@ class ExportService(CatalogServiceBase):
     def _export_common(
         self,
         workspace_id: str,
-        request: Union[PdfExportRequest, TabularExportRequest],
+        request: Union[VisualExportRequest, TabularExportRequest],
         file_path: Path,
         create_func: Callable,
         get_func: Callable,
@@ -190,6 +184,7 @@ class ExportService(CatalogServiceBase):
         timeout: float = 60.0,
         retry: float = 0.2,
         max_retry: float = 5.0,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> None:
         """
         Export a PDF of the specified GoodData Dashboard and save it to the specified file path.
@@ -201,18 +196,25 @@ class ExportService(CatalogServiceBase):
             file_name (str):
                 The name of the PDF file (excluding the file extension).
             store_path (Union[str, Path], optional):
-                The path to save the exported PDF. Defaults to the current directory.
+                The path to save the exported PDF.
+                Defaults to the current directory.
             timeout (float, optional):
-                The maximum amount of time (in seconds) to wait for the server to process the export. Defaults to 60.0.
+                The maximum amount of time (in seconds) to wait for the server to process the export.
+                Defaults to 60.0.
             retry (float, optional):
-                Initial wait time (in seconds) before retrying to get the exported content. Defaults to 0.2.
+                Initial wait time (in seconds) before retrying to get the exported content.
+                Defaults to 0.2.
             max_retry (float, optional):
-                The maximum retry wait time (in seconds). Defaults to 5.0.
+                The maximum retry wait time (in seconds).
+                Defaults to 5.0.
+            metadata (Dict[str, Any]):
+                Specify the metadata for the export.
+                Specific metadata can override filtering.
         """
         if not self._dashboard_id_exists(workspace_id, dashboard_id):
             raise ValueError(f"Dashboard id '{dashboard_id}' does not exist for workspace '{workspace_id}'.")
         store_path = store_path if isinstance(store_path, Path) else Path(store_path)
-        request = PdfExportRequest(dashboard_id=dashboard_id, file_name=file_name)
+        request = VisualExportRequest(dashboard_id=dashboard_id, file_name=file_name, metadata=metadata)
         file_path = store_path / f"{file_name}.pdf"
         create_func = self._actions_api.create_pdf_export
         get_func = self._actions_api.get_exported_file
@@ -251,47 +253,17 @@ class ExportService(CatalogServiceBase):
             workspace_id, export_request.to_api(), file_path, create_func, get_func, timeout, retry, max_retry
         )
 
-    @staticmethod
-    def _custom_overrides_labels(exec_table: ExecutionTable, metrics_format: str = "#,##0") -> ExportCustomOverride:
-        """
-        Visualizations by default use generated hash as local_id,
-        therefore, we might want to use dummy logic to replace it.
-        For attributes by label.id
-        For metrics by item.id
-        """
-        labels = {
-            attribute.local_id: ExportCustomLabel(title=attribute.label.id) for attribute in exec_table.attributes
-        }
-        metrics = {
-            metric.local_id: ExportCustomMetric(
-                title=metric.item.id if isinstance(metric, SimpleMetric) else metric.local_id, format=metrics_format
-            )
-            for metric in exec_table.metrics
-        }
-        return ExportCustomOverride(labels=labels, metrics=metrics)
-
-    def _get_visualization_exec_table(self, workspace_id: str, visualization_id: str) -> Tuple[ExecutionTable, str]:
+    def _get_visualization_title(self, workspace_id: str, visualization_id: str) -> str:
         try:
             visualization = VisualizationService(self._client).get_visualization(
                 workspace_id=workspace_id, visualization_id=visualization_id
             )
-            return TableService(self._client).for_visualization(
-                workspace_id=workspace_id, visualization=visualization
-            ), visualization.title
+            return visualization.title
         except NotFoundException:
             raise ValueError(
                 f"Either workspace workspace_id='{workspace_id}' "
                 f"or visualization visualization_id='{visualization_id}' does not exist."
             )
-
-    def _get_insight_exec_table(self, workspace_id: str, insight_id: str) -> Tuple[ExecutionTable, str]:
-        warn(
-            "This method is deprecated and it will be removed in v1.20.0 release. "
-            "Please use '_get_visualization_exec_table' method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._get_visualization_exec_table(workspace_id, insight_id)
 
     def export_tabular_by_visualization_id(
         self,
@@ -323,15 +295,13 @@ class ExportService(CatalogServiceBase):
         Returns:
             None
         """
-        exec_table, visualization_tile = self._get_visualization_exec_table(workspace_id, visualization_id)
-        custom_override = self._custom_overrides_labels(exec_table)
-        file_name = file_name if file_name is not None else visualization_tile
+        if file_name is None:
+            file_name = self._get_visualization_title(workspace_id, visualization_id)
         export_request = ExportRequest(
             format=file_format,
-            execution_result=exec_table.result_id,
+            visualization_object=visualization_id,
             file_name=file_name,
             settings=settings,
-            custom_override=custom_override,
         )
         self.export_tabular(
             workspace_id=workspace_id,
@@ -340,34 +310,4 @@ class ExportService(CatalogServiceBase):
             timeout=timeout,
             retry=retry,
             max_retry=max_retry,
-        )
-
-    def export_tabular_by_insight_id(
-        self,
-        workspace_id: str,
-        insight_id: str,
-        file_format: str,
-        file_name: Optional[str] = None,
-        settings: Optional[ExportSettings] = None,
-        store_path: Union[str, Path] = Path.cwd(),
-        timeout: float = 60.0,
-        retry: float = 0.2,
-        max_retry: float = 5.0,
-    ) -> None:
-        warn(
-            "This method is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'export_tabular_by_visualization_id' method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.export_tabular_by_visualization_id(
-            workspace_id,
-            insight_id,
-            file_format,
-            file_name,
-            settings,
-            store_path,
-            timeout,
-            retry,
-            max_retry,
         )

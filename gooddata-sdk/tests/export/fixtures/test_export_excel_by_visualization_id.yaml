@@ -28,14 +28,12 @@ interactions:
         Connection:
           - keep-alive
         Content-Length:
-          - '3321'
+          - '3305'
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -61,9 +59,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -72,7 +67,10 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 21 Oct 2024 11:57:02 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
           data:
@@ -123,9 +121,9 @@ interactions:
                         identifier:
                           id: date
                           type: dataset
-                      from: -11
+                      from: -12
                       granularity: GDC.time.month
-                      to: 0
+                      to: -1
                 properties:
                   controls:
                     colorMapping:
@@ -151,7 +149,7 @@ interactions:
                       rotation: auto
                 version: '2'
                 visualizationUrl: local:combo2
-              createdAt: 2024-01-25 12:37
+              createdAt: 2024-10-21 11:45
             relationships:
               createdBy:
                 data:
@@ -185,7 +183,6 @@ interactions:
               type: dataset
               attributes:
                 title: Date
-                description: ''
                 tags:
                   - Date
                 type: DATE
@@ -195,7 +192,7 @@ interactions:
               type: metric
               attributes:
                 title: '# of Active Customers'
-                createdAt: 2024-01-25 12:37
+                createdAt: 2024-10-21 11:45
                 content:
                   format: '#,##0'
                   maql: SELECT COUNT({attribute/customer_id},{attribute/order_line_id})
@@ -205,7 +202,7 @@ interactions:
               type: metric
               attributes:
                 title: Revenue per Customer
-                createdAt: 2024-01-25 12:37
+                createdAt: 2024-10-21 11:45
                 content:
                   format: $#,##0.0
                   maql: SELECT AVG(SELECT {metric/revenue} BY {attribute/customer_id})
@@ -226,325 +223,11 @@ interactions:
             self: http://localhost:3000/api/v1/entities/workspaces/demo/visualizationObjects/customers_trend?include=ALL
   - request:
       method: POST
-      uri: http://localhost:3000/api/v1/actions/workspaces/demo/execution/afm/execute
-      body:
-        execution:
-          attributes:
-            - label:
-                identifier:
-                  id: date.month
-                  type: label
-              localIdentifier: 0de7d7f08af7480aa636857a26be72b6
-          filters:
-            - relativeDateFilter:
-                dataset:
-                  identifier:
-                    id: date
-                    type: dataset
-                from: -11
-                granularity: MONTH
-                to: 0
-          measures:
-            - definition:
-                measure:
-                  item:
-                    identifier:
-                      id: amount_of_active_customers
-                      type: metric
-                  computeRatio: false
-                  filters: []
-              localIdentifier: 2ba0b87b59ca41a4b1530e81a5c1d081
-            - definition:
-                measure:
-                  item:
-                    identifier:
-                      id: revenue_per_customer
-                      type: metric
-                  computeRatio: false
-                  filters: []
-              localIdentifier: ec0606894b9f4897b7beaf1550608928
-        resultSpec:
-          dimensions:
-            - itemIdentifiers:
-                - 0de7d7f08af7480aa636857a26be72b6
-              localIdentifier: dim_0
-            - itemIdentifiers:
-                - measureGroup
-              localIdentifier: dim_1
-      headers:
-        Accept:
-          - application/json
-        Accept-Encoding:
-          - br, gzip, deflate
-        Content-Type:
-          - application/json
-        X-GDC-VALIDATE-RELATIONS:
-          - 'true'
-        X-Requested-With:
-          - XMLHttpRequest
-    response:
-      status:
-        code: 200
-        message: OK
-      headers:
-        Access-Control-Allow-Credentials:
-          - 'true'
-        Access-Control-Expose-Headers:
-          - Content-Disposition, Content-Length, Content-Range, Set-Cookie
-        Cache-Control:
-          - no-cache, no-store, max-age=0, must-revalidate
-        Connection:
-          - keep-alive
-        Content-Security-Policy:
-          - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
-            ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
-            cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
-            *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
-            ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
-            ''self'' blob:; child-src blob:; connect-src ''self'' *.tiles.mapbox.com
-            *.mapbox.com *.litix.io *.wistia.com *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net
-            matomo.anywhere.gooddata.com; media-src ''self'' blob: data: *.wistia.com
-            *.wistia.net embedwistia-a.akamaihd.net'
-        Content-Type:
-          - application/json
-        DATE: *id001
-        Expires:
-          - '0'
-        GoodData-Deployment:
-          - aio
-        Permission-Policy:
-          - geolocation 'none'; midi 'none'; sync-xhr 'none'; microphone 'none'; camera
-            'none'; magnetometer 'none'; gyroscope 'none'; fullscreen 'none'; payment
-            'none';
-        Pragma:
-          - no-cache
-        Referrer-Policy:
-          - no-referrer
-        Server:
-          - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
-        Transfer-Encoding:
-          - chunked
-        Vary:
-          - Origin
-          - Access-Control-Request-Method
-          - Access-Control-Request-Headers
-        X-Content-Type-Options:
-          - nosniff
-        X-GDC-TRACE-ID: *id001
-        X-XSS-Protection:
-          - 1 ; mode=block
-        content-length:
-          - '778'
-      body:
-        string:
-          executionResponse:
-            dimensions:
-              - headers:
-                  - attributeHeader:
-                      localIdentifier: 0de7d7f08af7480aa636857a26be72b6
-                      label:
-                        id: date.month
-                        type: label
-                      labelName: Date - Month/Year
-                      attribute:
-                        id: date.month
-                        type: attribute
-                      attributeName: Date - Month/Year
-                      granularity: MONTH
-                      primaryLabel:
-                        id: date.month
-                        type: label
-                      format:
-                        locale: en-US
-                        pattern: MMM y
-                localIdentifier: dim_0
-              - headers:
-                  - measureGroupHeaders:
-                      - localIdentifier: 2ba0b87b59ca41a4b1530e81a5c1d081
-                        format: '#,##0'
-                        name: '# of Active Customers'
-                      - localIdentifier: ec0606894b9f4897b7beaf1550608928
-                        format: $#,##0.0
-                        name: Revenue per Customer
-                localIdentifier: dim_1
-            links:
-              executionResult: 127b128bd0d5b4cf45d7a6ec2758d9e2f421fb35
-  - request:
-      method: GET
-      uri: http://localhost:3000/api/v1/actions/workspaces/demo/execution/afm/execute/result/127b128bd0d5b4cf45d7a6ec2758d9e2f421fb35?offset=0%2C0&limit=512%2C256
-      body: null
-      headers:
-        Accept:
-          - application/json
-        Accept-Encoding:
-          - br, gzip, deflate
-        X-GDC-VALIDATE-RELATIONS:
-          - 'true'
-        X-Requested-With:
-          - XMLHttpRequest
-    response:
-      status:
-        code: 200
-        message: OK
-      headers:
-        Access-Control-Allow-Credentials:
-          - 'true'
-        Access-Control-Expose-Headers:
-          - Content-Disposition, Content-Length, Content-Range, Set-Cookie
-        Cache-Control:
-          - no-cache, no-store, max-age=0, must-revalidate
-        Connection:
-          - keep-alive
-        Content-Security-Policy:
-          - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
-            ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
-            cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
-            *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
-            ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
-            ''self'' blob:; child-src blob:; connect-src ''self'' *.tiles.mapbox.com
-            *.mapbox.com *.litix.io *.wistia.com *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net
-            matomo.anywhere.gooddata.com; media-src ''self'' blob: data: *.wistia.com
-            *.wistia.net embedwistia-a.akamaihd.net'
-        Content-Type:
-          - application/json
-        DATE: *id001
-        Expires:
-          - '0'
-        GoodData-Deployment:
-          - aio
-        Permission-Policy:
-          - geolocation 'none'; midi 'none'; sync-xhr 'none'; microphone 'none'; camera
-            'none'; magnetometer 'none'; gyroscope 'none'; fullscreen 'none'; payment
-            'none';
-        Pragma:
-          - no-cache
-        Referrer-Policy:
-          - no-referrer
-        Server:
-          - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
-        Transfer-Encoding:
-          - chunked
-        Vary:
-          - Origin
-          - Access-Control-Request-Method
-          - Access-Control-Request-Headers
-        X-Content-Type-Options:
-          - nosniff
-        X-GDC-TRACE-ID: *id001
-        X-XSS-Protection:
-          - 1 ; mode=block
-        content-length:
-          - '1323'
-      body:
-        string:
-          data:
-            - - 61
-              - 150.10735849056604
-            - - 70
-              - 110.63396825396825
-            - - 53
-              - 164.63276595744682
-            - - 54
-              - 247.32333333333332
-            - - 58
-              - 113.54166666666667
-            - - 76
-              - 213.47925373134328
-            - - 95
-              - 167.58869047619046
-            - - 110
-              - 237.2503
-            - - 91
-              - 154.40761904761905
-            - - 59
-              - 307.9370909090909
-            - - 63
-              - 252.81866666666667
-          dimensionHeaders:
-            - headerGroups:
-                - headers:
-                    - attributeHeader:
-                        labelValue: 2023-02
-                        primaryLabelValue: 2023-02
-                    - attributeHeader:
-                        labelValue: 2023-03
-                        primaryLabelValue: 2023-03
-                    - attributeHeader:
-                        labelValue: 2023-04
-                        primaryLabelValue: 2023-04
-                    - attributeHeader:
-                        labelValue: 2023-05
-                        primaryLabelValue: 2023-05
-                    - attributeHeader:
-                        labelValue: 2023-06
-                        primaryLabelValue: 2023-06
-                    - attributeHeader:
-                        labelValue: 2023-07
-                        primaryLabelValue: 2023-07
-                    - attributeHeader:
-                        labelValue: 2023-08
-                        primaryLabelValue: 2023-08
-                    - attributeHeader:
-                        labelValue: 2023-09
-                        primaryLabelValue: 2023-09
-                    - attributeHeader:
-                        labelValue: 2023-10
-                        primaryLabelValue: 2023-10
-                    - attributeHeader:
-                        labelValue: 2023-11
-                        primaryLabelValue: 2023-11
-                    - attributeHeader:
-                        labelValue: 2023-12
-                        primaryLabelValue: 2023-12
-            - headerGroups:
-                - headers:
-                    - measureHeader:
-                        measureIndex: 0
-                    - measureHeader:
-                        measureIndex: 1
-          grandTotals: []
-          paging:
-            count:
-              - 11
-              - 2
-            offset:
-              - 0
-              - 0
-            total:
-              - 11
-              - 2
-  - request:
-      method: POST
       uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular
       body:
-        executionResult: 127b128bd0d5b4cf45d7a6ec2758d9e2f421fb35
         fileName: Customers Trend
         format: XLSX
-        customOverride:
-          labels:
-            0de7d7f08af7480aa636857a26be72b6:
-              title: date.month
-          metrics:
-            2ba0b87b59ca41a4b1530e81a5c1d081:
-              format: '#,##0'
-              title: amount_of_active_customers
-            ec0606894b9f4897b7beaf1550608928:
-              format: '#,##0'
-              title: revenue_per_customer
+        visualizationObject: customers_trend
       headers:
         Accept:
           - application/json
@@ -574,10 +257,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -602,9 +283,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -613,17 +291,21 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 21 Oct 2024 11:57:03 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
-          exportResult: f27228b3bc17c642753e37cf9c23875d834d09e4
+          exportResult: 3005aff1a735ed038348f896e7cc1db5d2a77f9b
   - request:
       method: GET
-      uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular/f27228b3bc17c642753e37cf9c23875d834d09e4
+      uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular/3005aff1a735ed038348f896e7cc1db5d2a77f9b
       body: null
       headers:
         Accept:
-          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv
+          - application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+            text/csv, text/html
         Accept-Encoding:
           - br, gzip, deflate
         X-GDC-VALIDATE-RELATIONS:
@@ -648,10 +330,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -674,9 +354,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -685,16 +362,20 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 21 Oct 2024 11:57:03 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string: ''
   - request:
       method: GET
-      uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular/f27228b3bc17c642753e37cf9c23875d834d09e4
+      uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular/3005aff1a735ed038348f896e7cc1db5d2a77f9b
       body: null
       headers:
         Accept:
-          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv
+          - application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+            text/csv, text/html
         Accept-Encoding:
           - br, gzip, deflate
         X-GDC-VALIDATE-RELATIONS:
@@ -719,10 +400,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -745,9 +424,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -756,16 +432,90 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 21 Oct 2024 11:57:03 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string: ''
   - request:
       method: GET
-      uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular/f27228b3bc17c642753e37cf9c23875d834d09e4
+      uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular/3005aff1a735ed038348f896e7cc1db5d2a77f9b
       body: null
       headers:
         Accept:
-          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv
+          - application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+            text/csv, text/html
+        Accept-Encoding:
+          - br, gzip, deflate
+        X-GDC-VALIDATE-RELATIONS:
+          - 'true'
+        X-Requested-With:
+          - XMLHttpRequest
+    response:
+      status:
+        code: 202
+        message: Accepted
+      headers:
+        Access-Control-Allow-Credentials:
+          - 'true'
+        Access-Control-Expose-Headers:
+          - Content-Disposition, Content-Length, Content-Range, Set-Cookie
+        Cache-Control:
+          - no-cache, no-store, max-age=0, must-revalidate
+        Connection:
+          - keep-alive
+        Content-Length:
+          - '0'
+        Content-Security-Policy:
+          - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
+            ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
+            *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
+            ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
+            ''self'' blob:; child-src blob:; connect-src ''self'' *.tiles.mapbox.com
+            *.mapbox.com *.litix.io *.wistia.com *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net
+            matomo.anywhere.gooddata.com; media-src ''self'' blob: data: *.wistia.com
+            *.wistia.net embedwistia-a.akamaihd.net'
+        DATE: *id001
+        Expires:
+          - '0'
+        GoodData-Deployment:
+          - aio
+        Permission-Policy:
+          - geolocation 'none'; midi 'none'; sync-xhr 'none'; microphone 'none'; camera
+            'none'; magnetometer 'none'; gyroscope 'none'; fullscreen 'none'; payment
+            'none';
+        Pragma:
+          - no-cache
+        Referrer-Policy:
+          - no-referrer
+        Server:
+          - nginx
+        Vary:
+          - Origin
+          - Access-Control-Request-Method
+          - Access-Control-Request-Headers
+        X-Content-Type-Options:
+          - nosniff
+        X-GDC-TRACE-ID: *id001
+        X-XSS-Protection:
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 21 Oct 2024 11:57:03 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
+      body:
+        string: ''
+  - request:
+      method: GET
+      uri: http://localhost:3000/api/v1/actions/workspaces/demo/export/tabular/3005aff1a735ed038348f896e7cc1db5d2a77f9b
+      body: null
+      headers:
+        Accept:
+          - application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+            text/csv, text/html
         Accept-Encoding:
           - br, gzip, deflate
         X-GDC-VALIDATE-RELATIONS:
@@ -788,16 +538,14 @@ interactions:
         Connection:
           - keep-alive
         Content-Disposition:
-          - attachment; filename*=UTF-8''Customers%20Trend.xlsx
+          - attachment; filename="=?UTF-8?Q?Customers_Trend.xlsx?="; filename*=UTF-8''Customers%20Trend.xlsx
         Content-Length:
-          - '6121'
+          - '6156'
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -822,9 +570,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -833,7 +578,10 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 21 Oct 2024 11:57:04 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string: !!binary |
           UEsDBBQAAAAIAAAAPwBhXUk6TwEAAI8EAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbK2Uy27CMBBF
@@ -852,95 +600,95 @@ interactions:
           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
-          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
-          UEsFBgAAAAAKAAoAgAIAAFMVAAAAAA==
+          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

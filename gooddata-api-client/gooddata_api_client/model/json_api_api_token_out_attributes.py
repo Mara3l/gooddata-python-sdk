@@ -135,7 +135,7 @@ class JsonApiApiTokenOutAttributes(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
-            bearer_token (str): [optional]  # noqa: E501
+            bearer_token (str): The value of the Bearer token. It is only returned when the API token is created.. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -221,7 +221,7 @@ class JsonApiApiTokenOutAttributes(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
-            bearer_token (str): [optional]  # noqa: E501
+            bearer_token (str): The value of the Bearer token. It is only returned when the API token is created.. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)

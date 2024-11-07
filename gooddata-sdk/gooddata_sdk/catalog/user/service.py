@@ -3,14 +3,16 @@ from __future__ import annotations
 
 import functools
 from pathlib import Path
-from typing import List
 
 from gooddata_api_client.exceptions import NotFoundException
+from gooddata_api_client.model.json_api_api_token_in import JsonApiApiTokenIn
+from gooddata_api_client.model.json_api_api_token_in_document import JsonApiApiTokenInDocument
 
 from gooddata_sdk.catalog.catalog_service_base import CatalogServiceBase
 from gooddata_sdk.catalog.user.declarative_model.user import CatalogDeclarativeUsers
 from gooddata_sdk.catalog.user.declarative_model.user_and_user_groups import CatalogDeclarativeUsersUserGroups
 from gooddata_sdk.catalog.user.declarative_model.user_group import CatalogDeclarativeUserGroups
+from gooddata_sdk.catalog.user.entity_model.api_token import CatalogApiToken
 from gooddata_sdk.catalog.user.entity_model.user import CatalogUser, CatalogUserDocument
 from gooddata_sdk.catalog.user.entity_model.user_group import CatalogUserGroup, CatalogUserGroupDocument
 from gooddata_sdk.catalog.user.management_model.management import (
@@ -70,14 +72,14 @@ class CatalogUserService(CatalogServiceBase):
         """
         self._entities_api.delete_entity_users(id=user_id)
 
-    def list_users(self) -> List[CatalogUser]:
+    def list_users(self) -> list[CatalogUser]:
         """Get a list of all existing users.
 
         Args:
             None
 
         Returns:
-            List[CatalogUser]:
+            list[CatalogUser]:
                 List of all Users as User entity objects.
         """
         get_users = functools.partial(
@@ -138,14 +140,14 @@ class CatalogUserService(CatalogServiceBase):
         """
         self._entities_api.delete_entity_user_groups(id=user_group_id)
 
-    def list_user_groups(self) -> List[CatalogUserGroup]:
+    def list_user_groups(self) -> list[CatalogUserGroup]:
         """Get a list of all existing user groups.
 
         Args:
             None
 
         Returns:
-            List[CatalogUserGroup]:
+            list[CatalogUserGroup]:
                 List of all User groups as UserGroup entity object.
         """
         get_user_groups = functools.partial(
@@ -392,3 +394,26 @@ class CatalogUserService(CatalogServiceBase):
 
     def revoke_permissions_bulk(self, permissions_assignment: CatalogPermissionsAssignment) -> None:
         self._user_management_api.revoke_permissions(permissions_assignment.to_api())
+
+    def list_user_api_tokens(self, user_id: str) -> list[CatalogApiToken]:
+        get_api_tokens = functools.partial(
+            self._entities_api.get_all_entities_api_tokens,
+            user_id,
+            _check_return_type=False,
+        )
+        api_tokens = load_all_entities(get_api_tokens)
+        return [CatalogApiToken(id=v["id"]) for v in api_tokens.data]
+
+    def create_user_api_token(self, user_id: str, api_token_id: str) -> CatalogApiToken:
+        document = JsonApiApiTokenInDocument(data=JsonApiApiTokenIn(id=api_token_id, type="apiToken"))
+        api_token = self._entities_api.create_entity_api_tokens(user_id, document, _check_return_type=False)
+        v = api_token.data
+        return CatalogApiToken(id=v["id"], bearer_token=v.get("attributes", {}).get("bearerToken"))
+
+    def get_user_api_token(self, user_id: str, api_token_id: str) -> CatalogApiToken:
+        api_token = self._entities_api.get_entity_api_tokens(user_id, api_token_id, _check_return_type=False)
+        v = api_token.data
+        return CatalogApiToken(id=v["id"])
+
+    def delete_user_api_token(self, user_id: str, api_token_id: str) -> None:
+        self._entities_api.delete_entity_api_tokens(user_id, api_token_id)

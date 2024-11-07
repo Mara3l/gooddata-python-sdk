@@ -25,13 +25,13 @@ from gooddata_sdk.catalog.data_source.declarative_model.physical_model.table imp
     CatalogDeclarativeColumn,
     CatalogDeclarativeTable,
 )
-from gooddata_sdk.catalog.data_source.entity_model.content_objects.table import CatalogDataSourceTable
 from gooddata_sdk.catalog.data_source.entity_model.data_source import (
     CatalogDataSource,
     CatalogDataSourceBigQuery,
     CatalogDataSourceDatabricks,
     CatalogDataSourceGreenplum,
     CatalogDataSourceMariaDb,
+    CatalogDataSourceMotherDuck,
     CatalogDataSourceMsSql,
     CatalogDataSourceMySql,
     CatalogDataSourcePostgres,
@@ -41,6 +41,7 @@ from gooddata_sdk.catalog.data_source.entity_model.data_source import (
     DatabricksAttributes,
     GreenplumAttributes,
     MariaDbAttributes,
+    MotherDuckAttributes,
     MsSqlAttributes,
     MySqlAttributes,
     PostgresAttributes,
@@ -51,17 +52,28 @@ from gooddata_sdk.catalog.data_source.entity_model.data_source import (
 from gooddata_sdk.catalog.data_source.service import CatalogDataSourceService
 from gooddata_sdk.catalog.data_source.validation.data_source import DataSourceValidator
 from gooddata_sdk.catalog.depends_on import CatalogDependsOn, CatalogDependsOnDateFilter
-from gooddata_sdk.catalog.entity import AttrCatalogEntity, BasicCredentials, TokenCredentialsFromFile
+from gooddata_sdk.catalog.entity import (
+    AttrCatalogEntity,
+    BasicCredentials,
+    KeyPairCredentials,
+    TokenCredentialsFromEnvVar,
+    TokenCredentialsFromFile,
+)
 from gooddata_sdk.catalog.export.request import (
     ExportCustomLabel,
     ExportCustomMetric,
     ExportCustomOverride,
     ExportRequest,
     ExportSettings,
+    VisualExportRequest,
 )
+from gooddata_sdk.catalog.filter_by import CatalogFilterBy
 from gooddata_sdk.catalog.identifier import (
     CatalogAssigneeIdentifier,
     CatalogDatasetWorkspaceDataFilterIdentifier,
+    CatalogExportDefinitionIdentifier,
+    CatalogNotificationChannelIdentifier,
+    CatalogUserIdentifier,
     CatalogWorkspaceIdentifier,
 )
 from gooddata_sdk.catalog.organization.entity_model.directive import CatalogCspDirective
@@ -73,6 +85,10 @@ from gooddata_sdk.catalog.organization.entity_model.jwk import (
 )
 from gooddata_sdk.catalog.organization.entity_model.organization import CatalogOrganization
 from gooddata_sdk.catalog.organization.entity_model.setting import CatalogOrganizationSetting
+from gooddata_sdk.catalog.organization.layout.notification_channel import (
+    CatalogDeclarativeNotificationChannel,
+    CatalogWebhook,
+)
 from gooddata_sdk.catalog.organization.service import CatalogOrganizationService
 from gooddata_sdk.catalog.permission.declarative_model.dashboard_assignees import (
     CatalogAvailableAssignees,
@@ -125,6 +141,14 @@ from gooddata_sdk.catalog.workspace.content_service import CatalogWorkspaceConte
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.analytics_model.analytics_model import (
     CatalogDeclarativeAnalytics,
     CatalogDeclarativeMetric,
+)
+from gooddata_sdk.catalog.workspace.declarative_model.workspace.analytics_model.export_definition import (
+    CatalogDeclarativeExportDefinition,
+    CatalogDeclarativeExportDefinitionRequestPayload,
+)
+from gooddata_sdk.catalog.workspace.declarative_model.workspace.automation import (
+    CatalogAutomationSchedule,
+    CatalogDeclarativeAutomation,
 )
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.logical_model.data_filter_references import (
     CatalogDeclarativeWorkspaceDataFilterReferences,
@@ -182,6 +206,7 @@ from gooddata_sdk.catalog.workspace.entity_model.user_data_filter import (
 )
 from gooddata_sdk.catalog.workspace.entity_model.workspace import CatalogWorkspace
 from gooddata_sdk.client import GoodDataApiClient
+from gooddata_sdk.compute.compute_to_sdk_converter import ComputeToSdkConverter
 from gooddata_sdk.compute.model.attribute import Attribute
 from gooddata_sdk.compute.model.base import ExecModelEntity, ObjId
 from gooddata_sdk.compute.model.execution import (
@@ -223,14 +248,10 @@ from gooddata_sdk.sdk import GoodDataSdk
 from gooddata_sdk.table import ExecutionTable, TableService
 from gooddata_sdk.utils import SideLoads
 from gooddata_sdk.visualization import (
-    Insight,
-    InsightAttribute,
-    InsightBucket,
-    InsightMetric,
-    InsightService,
     Visualization,
     VisualizationAttribute,
     VisualizationBucket,
+    VisualizationFilter,
     VisualizationMetric,
     VisualizationService,
 )

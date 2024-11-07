@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional, Type
+from typing import Optional
 
 import attr
 from gooddata_api_client.model.declarative_ldm import DeclarativeLdm
@@ -31,7 +31,7 @@ class CatalogDeclarativeModel(Base):
     ldm: Optional[CatalogDeclarativeLdm] = None
 
     @staticmethod
-    def client_class() -> Type[DeclarativeModel]:
+    def client_class() -> type[DeclarativeModel]:
         return DeclarativeModel
 
     def store_to_disk(self, workspace_folder: Path) -> None:
@@ -47,19 +47,19 @@ class CatalogDeclarativeModel(Base):
         if self.ldm:
             self.ldm.remove_wdf_refs()
 
-    def change_wdf_refs_id(self, mapping: Dict[str, str]) -> None:
+    def change_wdf_refs_id(self, mapping: dict[str, str]) -> None:
         if self.ldm:
             self.ldm.change_wdf_refs_id(mapping)
 
 
 @attr.s(auto_attribs=True, kw_only=True)
 class CatalogDeclarativeLdm(Base):
-    datasets: List[CatalogDeclarativeDataset] = attr.field(factory=list)
-    date_instances: List[CatalogDeclarativeDateDataset] = attr.field(factory=list)
-    dataset_extensions: Optional[List[CatalogDeclarativeDatasetExtension]] = None
+    datasets: list[CatalogDeclarativeDataset] = attr.field(factory=list)
+    date_instances: list[CatalogDeclarativeDateDataset] = attr.field(factory=list)
+    dataset_extensions: Optional[list[CatalogDeclarativeDatasetExtension]] = None
 
     @staticmethod
-    def client_class() -> Type[DeclarativeLdm]:
+    def client_class() -> type[DeclarativeLdm]:
         return DeclarativeLdm
 
     @staticmethod
@@ -188,6 +188,10 @@ class CatalogDeclarativeLdm(Base):
                     data_source_id = dataset.data_source_table_id.data_source_id
                     if data_source_id in data_source_mapping:
                         dataset.data_source_table_id.data_source_id = data_source_mapping[data_source_id]
+                if dataset.sql is not None:
+                    data_source_id = dataset.sql.data_source_id
+                    if data_source_id in data_source_mapping:
+                        dataset.sql.data_source_id = data_source_mapping[data_source_id]
         return self
 
     @staticmethod
@@ -239,9 +243,10 @@ class CatalogDeclarativeLdm(Base):
                             fact.source_column = self._change_case(fact.source_column, upper_case)
                 for reference in dataset.references:
                     if reference.source_columns is not None:
-                        new_columns = []
-                        for reference_column in reference.source_columns:
-                            new_columns.append(self._change_case(reference_column, upper_case))
+                        new_columns = [
+                            self._change_case(reference_column, upper_case)
+                            for reference_column in reference.source_columns
+                        ]
                         reference.source_columns = new_columns
                     elif reference.sources is not None:
                         for reference_source in reference.sources:
@@ -252,7 +257,7 @@ class CatalogDeclarativeLdm(Base):
         for dataset in self.datasets:
             dataset.workspace_data_filter_references = None
 
-    def change_wdf_refs_id(self, mapping: Dict[str, str]) -> None:
+    def change_wdf_refs_id(self, mapping: dict[str, str]) -> None:
         for dataset in self.datasets:
             if dataset.workspace_data_filter_references:
                 for wdf_ref in dataset.workspace_data_filter_references:

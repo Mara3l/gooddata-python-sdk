@@ -31,14 +31,18 @@ from gooddata_api_client.exceptions import ApiAttributeError
 
 
 def lazy_import():
+    from gooddata_api_client.model.json_api_analytical_dashboard_out_with_links import JsonApiAnalyticalDashboardOutWithLinks
     from gooddata_api_client.model.json_api_attribute_hierarchy_out_meta import JsonApiAttributeHierarchyOutMeta
-    from gooddata_api_client.model.json_api_metric_out_relationships import JsonApiMetricOutRelationships
+    from gooddata_api_client.model.json_api_automation_out_relationships import JsonApiAutomationOutRelationships
+    from gooddata_api_client.model.json_api_automation_out_with_links import JsonApiAutomationOutWithLinks
     from gooddata_api_client.model.json_api_user_identifier_out_attributes import JsonApiUserIdentifierOutAttributes
     from gooddata_api_client.model.json_api_user_identifier_out_with_links import JsonApiUserIdentifierOutWithLinks
     from gooddata_api_client.model.json_api_visualization_object_out_with_links import JsonApiVisualizationObjectOutWithLinks
     from gooddata_api_client.model.object_links import ObjectLinks
+    globals()['JsonApiAnalyticalDashboardOutWithLinks'] = JsonApiAnalyticalDashboardOutWithLinks
     globals()['JsonApiAttributeHierarchyOutMeta'] = JsonApiAttributeHierarchyOutMeta
-    globals()['JsonApiMetricOutRelationships'] = JsonApiMetricOutRelationships
+    globals()['JsonApiAutomationOutRelationships'] = JsonApiAutomationOutRelationships
+    globals()['JsonApiAutomationOutWithLinks'] = JsonApiAutomationOutWithLinks
     globals()['JsonApiUserIdentifierOutAttributes'] = JsonApiUserIdentifierOutAttributes
     globals()['JsonApiUserIdentifierOutWithLinks'] = JsonApiUserIdentifierOutWithLinks
     globals()['JsonApiVisualizationObjectOutWithLinks'] = JsonApiVisualizationObjectOutWithLinks
@@ -107,7 +111,7 @@ class JsonApiExportDefinitionOutIncludes(ModelComposed):
         lazy_import()
         return {
             'meta': (JsonApiAttributeHierarchyOutMeta,),  # noqa: E501
-            'relationships': (JsonApiMetricOutRelationships,),  # noqa: E501
+            'relationships': (JsonApiAutomationOutRelationships,),  # noqa: E501
             'links': (ObjectLinks,),  # noqa: E501
             'attributes': (JsonApiUserIdentifierOutAttributes,),  # noqa: E501
             'id': (str,),  # noqa: E501
@@ -168,7 +172,7 @@ class JsonApiExportDefinitionOutIncludes(ModelComposed):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             meta (JsonApiAttributeHierarchyOutMeta): [optional]  # noqa: E501
-            relationships (JsonApiMetricOutRelationships): [optional]  # noqa: E501
+            relationships (JsonApiAutomationOutRelationships): [optional]  # noqa: E501
             links (ObjectLinks): [optional]  # noqa: E501
             attributes (JsonApiUserIdentifierOutAttributes): [optional]  # noqa: E501
             id (str): API identifier of an object. [optional]  # noqa: E501
@@ -277,7 +281,7 @@ class JsonApiExportDefinitionOutIncludes(ModelComposed):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             meta (JsonApiAttributeHierarchyOutMeta): [optional]  # noqa: E501
-            relationships (JsonApiMetricOutRelationships): [optional]  # noqa: E501
+            relationships (JsonApiAutomationOutRelationships): [optional]  # noqa: E501
             links (ObjectLinks): [optional]  # noqa: E501
             attributes (JsonApiUserIdentifierOutAttributes): [optional]  # noqa: E501
             id (str): API identifier of an object. [optional]  # noqa: E501
@@ -353,6 +357,8 @@ class JsonApiExportDefinitionOutIncludes(ModelComposed):
           'allOf': [
           ],
           'oneOf': [
+              JsonApiAnalyticalDashboardOutWithLinks,
+              JsonApiAutomationOutWithLinks,
               JsonApiUserIdentifierOutWithLinks,
               JsonApiVisualizationObjectOutWithLinks,
           ],

@@ -6,8 +6,8 @@ version: '3.7'
 
 services:
   gooddata-cn-ce:
-    # Use the stable tag, which points to the latest stable development
-    image: 020413372491.dkr.ecr.us-east-1.amazonaws.com/nas/gooddata-cn-ce:stable
+    # Use the master tag, which points to the latest stable development
+    image: 020413372491.dkr.ecr.us-east-1.amazonaws.com/nas/gooddata-cn-ce:master
     ports:
       - "3000:3000"
       - "5432:5432"
@@ -19,6 +19,11 @@ services:
       GDCN_ENABLE_CSV_EXPORT_API: 1
       GDC_FEATURES_VALUES_ENABLE_ANALYTICAL_DASHBOARD_PERMISSIONS: "true"
       GDC_FEATURES_VALUES_ENABLE_METRIC_SQL_AND_DATA_EXPLAIN: 'ENABLED'
+      GDC_FEATURES_VALUES_ENABLE_ROLLUP_TOTALS: "true"
+      GDC_FEATURES_VALUES_ENABLE_ROLLUP_TOTALS_FOR_METRICS: "true"
+      GDC_FEATURES_VALUES_ENABLE_SCHEDULING: "true"
+      GDC_FEATURES_VALUES_ENABLE_ALERTING: "true"
+      GDC_FEATURES_VALUES_ENABLE_SMTP: "true"
 #      In the case of failing tests (HTTP 500), you can increase the memory for the metadata API
 #      METADATA_API_JAVA_OPTS: "-Xmx1024m -Xms512m"
   gooddata-fdw:

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import copy
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Optional
 
 import attr
 from gooddata_api_client.model.declarative_user_data_filter import DeclarativeUserDataFilter
@@ -29,6 +29,7 @@ from gooddata_sdk.catalog.setting import CatalogDeclarativeCustomApplicationSett
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.analytics_model.analytics_model import (
     CatalogDeclarativeAnalyticsLayer,
 )
+from gooddata_sdk.catalog.workspace.declarative_model.workspace.automation import CatalogDeclarativeAutomation
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.logical_model.ldm import CatalogDeclarativeLdm
 from gooddata_sdk.utils import create_directory, get_sorted_yaml_files, read_layout_from_file, write_layout_to_file
 
@@ -47,7 +48,7 @@ class CatalogDeclarativeWorkspaceModel(Base):
     analytics: Optional[CatalogDeclarativeAnalyticsLayer] = None
 
     @staticmethod
-    def client_class() -> Type[DeclarativeWorkspaceModel]:
+    def client_class() -> type[DeclarativeWorkspaceModel]:
         return DeclarativeWorkspaceModel
 
     def store_to_disk(self, workspace_folder: Path) -> None:
@@ -66,7 +67,7 @@ class CatalogDeclarativeWorkspaceModel(Base):
         if self.ldm:
             self.ldm.remove_wdf_refs()
 
-    def change_wdf_refs_id(self, mapping: Dict[str, str]) -> None:
+    def change_wdf_refs_id(self, mapping: dict[str, str]) -> None:
         if self.ldm:
             self.ldm.change_wdf_refs_id(mapping)
 
@@ -77,15 +78,16 @@ class CatalogDeclarativeWorkspace(Base):
     name: str
     model: Optional[CatalogDeclarativeWorkspaceModel] = None
     parent: Optional[CatalogWorkspaceIdentifier] = None
-    permissions: List[CatalogDeclarativeSingleWorkspacePermission] = attr.field(factory=list)
-    hierarchy_permissions: List[CatalogDeclarativeWorkspaceHierarchyPermission] = attr.field(factory=list)
+    permissions: list[CatalogDeclarativeSingleWorkspacePermission] = attr.field(factory=list)
+    hierarchy_permissions: list[CatalogDeclarativeWorkspaceHierarchyPermission] = attr.field(factory=list)
     early_access: Optional[str] = None
-    settings: List[CatalogDeclarativeSetting] = attr.field(factory=list)
-    user_data_filters: List[CatalogDeclarativeUserDataFilter] = attr.field(factory=list)
-    custom_application_settings: List[CatalogDeclarativeCustomApplicationSetting] = attr.field(factory=list)
+    settings: list[CatalogDeclarativeSetting] = attr.field(factory=list)
+    user_data_filters: list[CatalogDeclarativeUserDataFilter] = attr.field(factory=list)
+    custom_application_settings: list[CatalogDeclarativeCustomApplicationSetting] = attr.field(factory=list)
+    automations: list[CatalogDeclarativeAutomation] = attr.field(factory=list)
 
     @staticmethod
-    def client_class() -> Type[DeclarativeWorkspace]:
+    def client_class() -> type[DeclarativeWorkspace]:
         return DeclarativeWorkspace
 
     def to_api(self, include_nested_structures: bool = True) -> DeclarativeWorkspace:
@@ -121,21 +123,21 @@ class CatalogDeclarativeWorkspace(Base):
 class CatalogDeclarativeWorkspaceDataFilterSetting(Base):
     id: str
     title: str
-    filter_values: List[str]
+    filter_values: list[str]
     workspace: CatalogWorkspaceIdentifier
     description: Optional[str] = None
 
     @staticmethod
-    def client_class() -> Type[DeclarativeWorkspaceDataFilterSetting]:
+    def client_class() -> type[DeclarativeWorkspaceDataFilterSetting]:
         return DeclarativeWorkspaceDataFilterSetting
 
 
 @attr.s(auto_attribs=True, kw_only=True)
 class CatalogDeclarativeWorkspaceDataFilters(Base):
-    workspace_data_filters: List[CatalogDeclarativeWorkspaceDataFilter]
+    workspace_data_filters: list[CatalogDeclarativeWorkspaceDataFilter]
 
     @staticmethod
-    def client_class() -> Type[DeclarativeWorkspaceDataFilters]:
+    def client_class() -> type[DeclarativeWorkspaceDataFilters]:
         return DeclarativeWorkspaceDataFilters
 
     def store_to_disk(self, layout_organization_folder: Path) -> None:
@@ -151,16 +153,13 @@ class CatalogDeclarativeWorkspaceDataFilters(Base):
         workspace_data_filters_files = get_sorted_yaml_files(
             CatalogDeclarativeWorkspaces.workspace_data_filters_folder(layout_organization_folder)
         )
-        workspace_data_filters = []
-        for workspace_data_filters_file in workspace_data_filters_files:
-            workspace_data_filters.append(
-                CatalogDeclarativeWorkspaceDataFilter.load_from_disk(workspace_data_filters_file)
-            )
+        workspace_data_filters = [
+            CatalogDeclarativeWorkspaceDataFilter.load_from_disk(workspace_data_filters_file)
+            for workspace_data_filters_file in workspace_data_filters_files
+        ]
         return cls(workspace_data_filters=workspace_data_filters)
 
-    def create_copy(
-        self, source_ws_id: str, target_ws_id: str
-    ) -> Tuple["CatalogDeclarativeWorkspaceDataFilters", Dict]:
+    def create_copy(self, source_ws_id: str, target_ws_id: str) -> tuple[CatalogDeclarativeWorkspaceDataFilters, dict]:
         self_copy = copy.deepcopy(self)
         # update workspace data filter settings
         for wdf in self_copy.workspace_data_filters:
@@ -192,12 +191,12 @@ class CatalogDeclarativeWorkspaceDataFilter(Base):
     id: str
     title: str
     column_name: str
-    workspace_data_filter_settings: List[CatalogDeclarativeWorkspaceDataFilterSetting]
+    workspace_data_filter_settings: list[CatalogDeclarativeWorkspaceDataFilterSetting]
     description: Optional[str] = None
     workspace: Optional[CatalogWorkspaceIdentifier] = None
 
     @staticmethod
-    def client_class() -> Type[DeclarativeWorkspaceDataFilter]:
+    def client_class() -> type[DeclarativeWorkspaceDataFilter]:
         return DeclarativeWorkspaceDataFilter
 
     def store_to_disk(self, workspaces_data_filters_folder: Path) -> None:
@@ -225,10 +224,10 @@ class CatalogDeclarativeWorkspaceDataFilter(Base):
 
 @attr.s(auto_attribs=True, kw_only=True)
 class CatalogDeclarativeUserDataFilters(Base):
-    user_data_filters: List[CatalogDeclarativeUserDataFilter]
+    user_data_filters: list[CatalogDeclarativeUserDataFilter]
 
     @staticmethod
-    def client_class() -> Type[DeclarativeUserDataFilters]:
+    def client_class() -> type[DeclarativeUserDataFilters]:
         return DeclarativeUserDataFilters
 
     def store_to_disk(self, layout_organization_folder: Path) -> None:
@@ -242,9 +241,10 @@ class CatalogDeclarativeUserDataFilters(Base):
         user_data_filters_files = get_sorted_yaml_files(
             CatalogDeclarativeWorkspaces.user_data_filters_folder(layout_organization_folder)
         )
-        user_data_filters = []
-        for user_data_filters_file in user_data_filters_files:
-            user_data_filters.append(CatalogDeclarativeUserDataFilter.load_from_disk(user_data_filters_file))
+        user_data_filters = [
+            CatalogDeclarativeUserDataFilter.load_from_disk(user_data_filters_file)
+            for user_data_filters_file in user_data_filters_files
+        ]
         return cls(user_data_filters=user_data_filters)
 
 
@@ -258,7 +258,7 @@ class CatalogDeclarativeUserDataFilter(Base):
     description: Optional[str] = None
 
     @staticmethod
-    def client_class() -> Type[DeclarativeUserDataFilter]:
+    def client_class() -> type[DeclarativeUserDataFilter]:
         return DeclarativeUserDataFilter
 
     def store_to_disk(self, user_data_filters_folder: Path) -> None:
@@ -286,11 +286,11 @@ class CatalogDeclarativeUserDataFilter(Base):
 
 @attr.s(auto_attribs=True, kw_only=True)
 class CatalogDeclarativeWorkspaces(Base):
-    workspaces: List[CatalogDeclarativeWorkspace]
-    workspace_data_filters: List[CatalogDeclarativeWorkspaceDataFilter]
+    workspaces: list[CatalogDeclarativeWorkspace]
+    workspace_data_filters: list[CatalogDeclarativeWorkspaceDataFilter]
 
     @staticmethod
-    def client_class() -> Type[DeclarativeWorkspaces]:
+    def client_class() -> type[DeclarativeWorkspaces]:
         return DeclarativeWorkspaces
 
     @staticmethod
