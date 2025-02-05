@@ -38,10 +38,8 @@ with gooddata_api_client.ApiClient() as api_client:
     api_instance = test_connection_api.TestConnectionApi(api_client)
     data_source_id = "myPostgres" # str | Data source id
     test_request = TestRequest(
-        cache_path=[
-            "cache_path_example",
-        ],
-        enable_caching=False,
+        client_id="client_id_example",
+        client_secret="client_secret_example",
         parameters=[
             DataSourceParameter(
                 name="name_example",
@@ -49,6 +47,8 @@ with gooddata_api_client.ApiClient() as api_client:
             ),
         ],
         password="admin123",
+        private_key="private_key_example",
+        private_key_passphrase="private_key_passphrase_example",
         schema="public",
         token="token_example",
         url="jdbc:postgresql://localhost:5432/db_name",
@@ -123,6 +123,8 @@ with gooddata_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = test_connection_api.TestConnectionApi(api_client)
     test_definition_request = TestDefinitionRequest(
+        client_id="client_id_example",
+        client_secret="client_secret_example",
         parameters=[
             DataSourceParameter(
                 name="name_example",
@@ -130,6 +132,8 @@ with gooddata_api_client.ApiClient() as api_client:
             ),
         ],
         password="admin123",
+        private_key="private_key_example",
+        private_key_passphrase="private_key_passphrase_example",
         schema="public",
         token="token_example",
         type="POSTGRESQL",

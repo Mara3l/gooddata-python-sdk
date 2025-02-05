@@ -1,4 +1,4 @@
-# (C) 2024 GoodData Corporation
+# (C) 2025 GoodData Corporation
 version: 1
 interactions:
   - request:
@@ -30,10 +30,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -59,9 +57,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Transfer-Encoding:
           - chunked
         Vary:
@@ -72,14 +67,16 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
         content-length:
-          - '325'
+          - '1228'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:47 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
           dataSources:
-            - enableCaching: false
-              id: demo-test-ds
+            - id: demo-test-ds
               name: demo-test-ds
               permissions:
                 - assignee:
@@ -94,6 +91,41 @@ interactions:
               type: POSTGRESQL
               url: jdbc:postgresql://localhost:5432/demo
               username: demouser
+            - clientId: client-id
+              id: demo-test-ds-databricks-client-secret
+              name: demo-test-ds-databricks-client-secret
+              parameters:
+                - name: catalog
+                  value: demo
+              permissions:
+                - assignee:
+                    id: demo2
+                    type: user
+                  name: MANAGE
+                - assignee:
+                    id: demoGroup
+                    type: userGroup
+                  name: USE
+              schema: demo
+              type: DATABRICKS
+              url: jdbc:databricks://dbc-1234-abc.cloud.databricks.com:443;UserAgentEntry=gooddata+cloud-native/v3;httpPath=/sql/1.0/warehouses/9876fdsa
+            - id: demo-test-ds-databricks-token
+              name: demo-test-ds-databricks-token
+              parameters:
+                - name: catalog
+                  value: demo
+              permissions:
+                - assignee:
+                    id: demo2
+                    type: user
+                  name: MANAGE
+                - assignee:
+                    id: demoGroup
+                    type: userGroup
+                  name: USE
+              schema: demo
+              type: DATABRICKS
+              url: jdbc:databricks://dbc-1234-abc.cloud.databricks.com:443;UserAgentEntry=gooddata+cloud-native/v3;httpPath=/sql/1.0/warehouses/9876fdsa
   - request:
       method: POST
       uri: http://localhost:3000/api/v1/actions/dataSource/test
@@ -130,10 +162,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -158,9 +188,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Transfer-Encoding:
           - chunked
         Vary:
@@ -171,13 +198,17 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
         content-length:
-          - '60'
+          - '81'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:48 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
           queryDurationMillis:
-            simpleSelect: 1
+            createCacheTable: 0
+            simpleSelect: 2
           successful: true
   - request:
       method: PUT
@@ -189,7 +220,6 @@ interactions:
             schema: demo
             type: POSTGRESQL
             url: jdbc:postgresql://localhost:5432/demo
-            enableCaching: false
             username: demouser
             permissions:
               - assignee:
@@ -226,10 +256,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -252,9 +280,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -263,7 +288,10 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:48 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string: ''
   - request:
@@ -295,10 +323,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -323,9 +349,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Transfer-Encoding:
           - chunked
         Vary:
@@ -336,14 +359,16 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
         content-length:
-          - '325'
+          - '303'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:48 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
           dataSources:
-            - enableCaching: false
-              id: demo-test-ds
+            - id: demo-test-ds
               name: demo-test-ds
               permissions:
                 - assignee:
@@ -368,7 +393,6 @@ interactions:
             schema: demo
             type: POSTGRESQL
             url: jdbc:postgresql://localhost:5432/demo
-            enableCaching: false
             username: demouser
             permissions:
               - assignee:
@@ -380,6 +404,43 @@ interactions:
                   type: userGroup
                 name: USE
             password: demopass
+          - id: demo-test-ds-databricks-client-secret
+            name: demo-test-ds-databricks-client-secret
+            schema: demo
+            type: DATABRICKS
+            url: jdbc:databricks://dbc-1234-abc.cloud.databricks.com:443;httpPath=/sql/1.0/warehouses/9876fdsa;
+            parameters:
+              - name: catalog
+                value: demo
+            permissions:
+              - assignee:
+                  id: demo2
+                  type: user
+                name: MANAGE
+              - assignee:
+                  id: demoGroup
+                  type: userGroup
+                name: USE
+            clientId: client-id
+            clientSecret: databricks-client-secret
+          - id: demo-test-ds-databricks-token
+            name: demo-test-ds-databricks-token
+            schema: demo
+            type: DATABRICKS
+            url: jdbc:databricks://dbc-1234-abc.cloud.databricks.com:443;httpPath=/sql/1.0/warehouses/9876fdsa;
+            parameters:
+              - name: catalog
+                value: demo
+            permissions:
+              - assignee:
+                  id: demo2
+                  type: user
+                name: MANAGE
+              - assignee:
+                  id: demoGroup
+                  type: userGroup
+                name: USE
+            token: databricks-token
       headers:
         Accept-Encoding:
           - br, gzip, deflate
@@ -405,10 +466,8 @@ interactions:
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
-            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdn.jsdelivr.net
-            cdnjs.cloudflare.com; img-src ''self'' data: blob: *.wistia.com *.wistia.net
-            *.hsforms.net *.hsforms.com embedwistia-a.akamaihd.net privacy-policy.truste.com
-            www.gooddata.com; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
+            src.litix.io matomo.anywhere.gooddata.com *.jquery.com unpkg.com cdnjs.cloudflare.com;
+            img-src * data: blob:; style-src ''self'' ''unsafe-inline'' fonts.googleapis.com
             cdn.jsdelivr.net fast.fonts.net; font-src ''self'' data: fonts.gstatic.com
             *.alicdn.com *.wistia.com cdn.jsdelivr.net info.gooddata.com; frame-src
             ''self'' *.hsforms.net *.hsforms.com; object-src ''none''; worker-src
@@ -431,9 +490,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -442,6 +498,9 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:48 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string: ''

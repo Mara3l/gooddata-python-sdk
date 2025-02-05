@@ -1,4 +1,4 @@
-# (C) 2024 GoodData Corporation
+# (C) 2025 GoodData Corporation
 version: 1
 interactions:
   - request:
@@ -28,7 +28,7 @@ interactions:
         Connection:
           - keep-alive
         Content-Length:
-          - '295'
+          - '314'
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
@@ -59,9 +59,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -70,7 +67,10 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:50 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
           data:
@@ -79,7 +79,7 @@ interactions:
             attributes:
               url: jdbc:postgresql://localhost:5432/demo
               username: demouser
-              enableCaching: false
+              authenticationType: USERNAME_PASSWORD
               name: demo-test-ds
               type: POSTGRESQL
               schema: demo
@@ -121,7 +121,7 @@ interactions:
         Connection:
           - keep-alive
         Content-Length:
-          - '319'
+          - '338'
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
@@ -151,9 +151,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -162,7 +159,10 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:50 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
           data:
@@ -171,8 +171,8 @@ interactions:
             attributes:
               url: jdbc:postgresql://localhost:5432/demo
               username: demouser
-              enableCaching: false
               cacheStrategy: NEVER
+              authenticationType: USERNAME_PASSWORD
               name: demo-test-ds
               type: POSTGRESQL
               schema: demo
@@ -205,7 +205,7 @@ interactions:
         Connection:
           - keep-alive
         Content-Length:
-          - '319'
+          - '338'
         Content-Security-Policy:
           - 'default-src ''self'' *.wistia.com *.wistia.net; script-src ''self'' ''unsafe-inline''
             ''unsafe-eval'' *.wistia.com *.wistia.net *.hsforms.net *.hsforms.com
@@ -235,9 +235,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -246,7 +243,10 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:50 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string:
           data:
@@ -255,8 +255,8 @@ interactions:
             attributes:
               url: jdbc:postgresql://localhost:5432/demo
               username: demouser
-              enableCaching: false
               cacheStrategy: NEVER
+              authenticationType: USERNAME_PASSWORD
               name: demo-test-ds
               type: POSTGRESQL
               schema: demo
@@ -272,7 +272,6 @@ interactions:
             schema: demo
             type: POSTGRESQL
             url: jdbc:postgresql://localhost:5432/demo
-            enableCaching: false
             username: demouser
             permissions:
               - assignee:
@@ -284,6 +283,43 @@ interactions:
                   type: userGroup
                 name: USE
             password: demopass
+          - id: demo-test-ds-databricks-client-secret
+            name: demo-test-ds-databricks-client-secret
+            schema: demo
+            type: DATABRICKS
+            url: jdbc:databricks://dbc-1234-abc.cloud.databricks.com:443;httpPath=/sql/1.0/warehouses/9876fdsa;
+            parameters:
+              - name: catalog
+                value: demo
+            permissions:
+              - assignee:
+                  id: demo2
+                  type: user
+                name: MANAGE
+              - assignee:
+                  id: demoGroup
+                  type: userGroup
+                name: USE
+            clientId: client-id
+            clientSecret: databricks-client-secret
+          - id: demo-test-ds-databricks-token
+            name: demo-test-ds-databricks-token
+            schema: demo
+            type: DATABRICKS
+            url: jdbc:databricks://dbc-1234-abc.cloud.databricks.com:443;httpPath=/sql/1.0/warehouses/9876fdsa;
+            parameters:
+              - name: catalog
+                value: demo
+            permissions:
+              - assignee:
+                  id: demo2
+                  type: user
+                name: MANAGE
+              - assignee:
+                  id: demoGroup
+                  type: userGroup
+                name: USE
+            token: databricks-token
       headers:
         Accept-Encoding:
           - br, gzip, deflate
@@ -333,9 +369,6 @@ interactions:
           - no-referrer
         Server:
           - nginx
-        Set-Cookie:
-          - SPRING_REDIRECT_URI=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00
-            GMT; HttpOnly; SameSite=Lax
         Vary:
           - Origin
           - Access-Control-Request-Method
@@ -344,6 +377,9 @@ interactions:
           - nosniff
         X-GDC-TRACE-ID: *id001
         X-XSS-Protection:
-          - 1 ; mode=block
+          - '0'
+        set-cookie:
+          - SPRING_REDIRECT_URI=; Max-Age=0; Expires=Mon, 06 Jan 2025 11:44:51 GMT;
+            Path=/; HTTPOnly; SameSite=Lax
       body:
         string: ''

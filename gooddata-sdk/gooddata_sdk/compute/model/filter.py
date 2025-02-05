@@ -76,7 +76,7 @@ def _to_identifier(val: Union[ObjId, str]) -> Union[afm_models.AfmLocalIdentifie
 
 class AttributeFilter(Filter):
     def __init__(self, label: Union[ObjId, str, Attribute], values: Optional[list[str]] = None) -> None:
-        super(AttributeFilter, self).__init__()
+        super().__init__()
 
         self._label = _extract_id_or_local_id(label)
         self._values = values or []
@@ -137,7 +137,6 @@ _GRANULARITY: set[str] = {
     "QUARTER",
     "MONTH",
     "WEEK",
-    "WEEK",
     "DAY",
     "HOUR",
     "MINUTE",
@@ -154,12 +153,11 @@ _GRANULARITY: set[str] = {
 
 class RelativeDateFilter(Filter):
     def __init__(self, dataset: ObjId, granularity: str, from_shift: int, to_shift: int) -> None:
-        super(RelativeDateFilter, self).__init__()
+        super().__init__()
 
         if granularity not in _GRANULARITY:
             raise ValueError(
-                f"Invalid relative date filter granularity '{granularity}'."
-                f"It is expected to be one of: {_GRANULARITY}"
+                f"Invalid relative date filter granularity '{granularity}'. It is expected to be one of: {_GRANULARITY}"
             )
 
         self._dataset = dataset
@@ -249,7 +247,7 @@ class AllTimeFilter(Filter):
     """
 
     def __init__(self, dataset: ObjId) -> None:
-        super(AllTimeFilter, self).__init__()
+        super().__init__()
         self._dataset = dataset
 
     @property
@@ -265,7 +263,7 @@ class AllTimeFilter(Filter):
 
 class AbsoluteDateFilter(Filter):
     def __init__(self, dataset: ObjId, from_date: str, to_date: str) -> None:
-        super(AbsoluteDateFilter, self).__init__()
+        super().__init__()
 
         self._dataset = dataset
         self._from_date = from_date
@@ -335,7 +333,7 @@ _METRIC_VALUE_FILTER_OPERATORS = {
 
 class AllMetricValueFilter(Filter):
     def __init__(self, metric: Union[ObjId, str, Metric]) -> None:
-        super(AllMetricValueFilter, self).__init__()
+        super().__init__()
         self._metric = _extract_id_or_local_id(metric)
 
     @property
@@ -358,7 +356,7 @@ class MetricValueFilter(Filter):
         values: Union[float, int, tuple[float, float]],
         treat_nulls_as: Union[float, None] = None,
     ) -> None:
-        super(MetricValueFilter, self).__init__()
+        super().__init__()
 
         if operator not in _METRIC_VALUE_FILTER_OPERATORS:
             raise ValueError(
@@ -374,8 +372,7 @@ class MetricValueFilter(Filter):
         else:
             if not isinstance(values, (int, float)) and len(values) != 1:
                 raise ValueError(
-                    f"Invalid number of values for {operator}. "
-                    f"Expected single int, float or one-sized list or tuple."
+                    f"Invalid number of values for {operator}. Expected single int, float or one-sized list or tuple."
                 )
             # Convert int to float as AFM model filters accept float values
             self._values = (float(values),) if isinstance(values, (int, float)) else values
@@ -453,12 +450,11 @@ class RankingFilter(Filter):
         value: int,
         dimensionality: Optional[list[Union[str, ObjId, Attribute, Metric]]],
     ) -> None:
-        super(RankingFilter, self).__init__()
+        super().__init__()
 
         if operator not in _RANKING_OPERATORS:
             raise ValueError(
-                f"Invalid ranking filter operator type '{operator}'."
-                f"It is expected to be one of: {_RANKING_OPERATORS}"
+                f"Invalid ranking filter operator type '{operator}'. It is expected to be one of: {_RANKING_OPERATORS}"
             )
 
         self._metrics = [_extract_id_or_local_id(m) for m in metrics]
@@ -505,6 +501,5 @@ class RankingFilter(Filter):
         )
         metric_ids = [m.id if isinstance(m, ObjId) else m for m in self.metrics]
         return (
-            f"{self.operator.capitalize()} {self.value}{dimensionality_str} "
-            f"{labels.get(metric_ids[0], metric_ids[0])}"
+            f"{self.operator.capitalize()} {self.value}{dimensionality_str} {labels.get(metric_ids[0], metric_ids[0])}"
         )

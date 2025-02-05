@@ -6,12 +6,16 @@ from pathlib import Path
 from gooddata_api_client.exceptions import NotFoundException
 from gooddata_sdk import (
     CatalogCspDirective,
+    CatalogDeclarativeNotificationChannel,
     CatalogJwk,
     CatalogOrganization,
     CatalogOrganizationSetting,
     CatalogRsaSpecification,
+    CatalogWebhook,
     GoodDataSdk,
 )
+from gooddata_sdk.catalog.organization.entity_model.identity_provider import CatalogIdentityProvider
+from gooddata_sdk.catalog.organization.layout.identity_provider import CatalogDeclarativeIdentityProvider
 from tests_support.vcrpy_utils import get_vcr
 
 gd_vcr = get_vcr()
@@ -342,3 +346,238 @@ def test_update_allowed_origins(test_config):
         sdk.catalog_organization.update_allowed_origins([])
         organization = sdk.catalog_organization.get_organization()
         assert organization.attributes.allowed_origins == []
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "layout_notification_channels.yaml"))
+def test_layout_notification_channels(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+
+    ncs = sdk.catalog_organization.get_declarative_notification_channels()
+    assert len(ncs) == 0
+
+    try:
+        notification_channels_e = [
+            CatalogDeclarativeNotificationChannel(
+                id="webhook",
+                name="Webhook",
+                destination=CatalogWebhook(url="https://webhook.site", token="123"),
+                custom_dashboard_url="https://dashboard.site",
+                allowed_recipients="CREATOR",
+            ),
+        ]
+        sdk.catalog_organization.put_declarative_notification_channels(notification_channels_e)
+        notification_channels_o = sdk.catalog_organization.get_declarative_notification_channels()
+        assert notification_channels_e[0].id == notification_channels_o[0].id
+        assert notification_channels_e[0].name == notification_channels_o[0].name
+        assert notification_channels_e[0].destination == notification_channels_o[0].destination
+        assert notification_channels_e[0].custom_dashboard_url == notification_channels_o[0].custom_dashboard_url
+        assert notification_channels_e[0].allowed_recipients == notification_channels_o[0].allowed_recipients
+    finally:
+        sdk.catalog_organization.put_declarative_notification_channels([])
+        ncs = sdk.catalog_organization.get_declarative_notification_channels()
+        assert len(ncs) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "create_identity_provider.yaml"))
+def test_create_identity_provider(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+
+    identity_provider_id = "test_identity_provider"
+    custom_claim_mapping = {"email": "email"}
+    identifiers = ["goodtesting.com"]
+    oauth_client_id = "test_client_id"
+    oauth_client_secret = "test_client_secret"
+    oauth_issuer_id = "test_issuer_id"
+    oauth_issuer_location = "https://issuer.goodtesting.com"
+
+    new_identity_provider = CatalogIdentityProvider.init(
+        identity_provider_id=identity_provider_id,
+        custom_claim_mapping=custom_claim_mapping,
+        identifiers=identifiers,
+        oauth_client_id=oauth_client_id,
+        oauth_client_secret=oauth_client_secret,
+        oauth_issuer_id=oauth_issuer_id,
+        oauth_issuer_location=oauth_issuer_location,
+    )
+
+    try:
+        sdk.catalog_organization.create_identity_provider(new_identity_provider)
+        identity_provider = sdk.catalog_organization.get_identity_provider(identity_provider_id)
+        assert identity_provider.id == identity_provider_id
+        assert identity_provider.attributes.custom_claim_mapping == custom_claim_mapping
+        assert identity_provider.attributes.identifiers == identifiers
+        assert identity_provider.attributes.oauth_client_id == oauth_client_id
+        assert identity_provider.attributes.oauth_client_secret is None  # oauth_client_secret is not returned
+        assert identity_provider.attributes.oauth_issuer_id == oauth_issuer_id
+        assert identity_provider.attributes.oauth_issuer_location == oauth_issuer_location
+    finally:
+        sdk.catalog_organization.delete_identity_provider(identity_provider_id)
+        assert len(sdk.catalog_organization.list_identity_providers()) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "list_identity_providers.yaml"))
+def test_list_identity_providers(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+
+    identity_provider_id = "test_identity_provider"
+    custom_claim_mapping = {"email": "email"}
+    identifiers = ["goodtesting.com"]
+    oauth_client_id = "test_client_id"
+    oauth_client_secret = "test_client_secret"
+    oauth_issuer_id = "test_issuer_id"
+    oauth_issuer_location = "https://issuer.goodtesting.com"
+
+    new_identity_provider_1 = CatalogIdentityProvider.init(
+        identity_provider_id=identity_provider_id + "_1",
+        custom_claim_mapping=custom_claim_mapping,
+        identifiers=identifiers,
+        oauth_client_id=oauth_client_id + "_1",
+        oauth_client_secret=oauth_client_secret + "_1",
+        oauth_issuer_id=oauth_issuer_id + "_1",
+        oauth_issuer_location=oauth_issuer_location,
+    )
+    new_identity_provider_2 = CatalogIdentityProvider.init(
+        identity_provider_id=identity_provider_id + "_2",
+        custom_claim_mapping=custom_claim_mapping,
+        identifiers=identifiers,
+        oauth_client_id=oauth_client_id + "_2",
+        oauth_client_secret=oauth_client_secret + "_2",
+        oauth_issuer_id=oauth_issuer_id + "_2",
+        oauth_issuer_location=oauth_issuer_location,
+    )
+
+    try:
+        sdk.catalog_organization.create_identity_provider(new_identity_provider_1)
+        sdk.catalog_organization.create_identity_provider(new_identity_provider_2)
+        identity_providers = sdk.catalog_organization.list_identity_providers()
+        # oauth_client_secret is not returned
+        new_identity_provider_1.attributes.oauth_client_secret = None
+        new_identity_provider_2.attributes.oauth_client_secret = None
+        assert len(identity_providers) == 2
+        assert new_identity_provider_1 in identity_providers
+        assert new_identity_provider_2 in identity_providers
+    finally:
+        sdk.catalog_organization.delete_identity_provider(new_identity_provider_1.id)
+        sdk.catalog_organization.delete_identity_provider(new_identity_provider_2.id)
+        assert len(sdk.catalog_organization.list_identity_providers()) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "delete_identity_provider.yaml"))
+def test_delete_identity_provider(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+
+    identity_provider_id = "test_identity_provider"
+    custom_claim_mapping = {"email": "email"}
+    identifiers = ["goodtesting.com"]
+    oauth_client_id = "test_client_id"
+    oauth_client_secret = "test_client_secret"
+    oauth_issuer_id = "test_issuer_id"
+    oauth_issuer_location = "https://issuer.goodtesting.com"
+
+    new_identity_provider = CatalogIdentityProvider.init(
+        identity_provider_id=identity_provider_id,
+        custom_claim_mapping=custom_claim_mapping,
+        identifiers=identifiers,
+        oauth_client_id=oauth_client_id,
+        oauth_client_secret=oauth_client_secret,
+        oauth_issuer_id=oauth_issuer_id,
+        oauth_issuer_location=oauth_issuer_location,
+    )
+
+    try:
+        sdk.catalog_organization.create_identity_provider(new_identity_provider)
+        sdk.catalog_organization.delete_identity_provider(identity_provider_id)
+        sdk.catalog_organization.get_identity_provider(identity_provider_id)
+    except NotFoundException:
+        assert len(sdk.catalog_organization.list_identity_providers()) == 0
+    finally:
+        assert len(sdk.catalog_organization.list_identity_providers()) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "update_identity_provider.yaml"))
+def test_update_identity_provider(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+
+    identity_provider_id = "test_identity_provider"
+    custom_claim_mapping = {"email": "email"}
+    identifiers = ["goodtesting.com"]
+    oauth_client_id = "test_client_id"
+    oauth_client_secret = "test_client_secret"
+    oauth_issuer_id = "test_issuer_id"
+    oauth_issuer_location = "https://issuer.goodtesting.com"
+
+    new_identity_provider = CatalogIdentityProvider.init(
+        identity_provider_id=identity_provider_id,
+        custom_claim_mapping=custom_claim_mapping,
+        identifiers=identifiers,
+        oauth_client_id=oauth_client_id,
+        oauth_client_secret=oauth_client_secret,
+        oauth_issuer_id=oauth_issuer_id,
+        oauth_issuer_location=oauth_issuer_location,
+    )
+    update_identity_provider = CatalogIdentityProvider.init(
+        identity_provider_id=identity_provider_id,
+        custom_claim_mapping=custom_claim_mapping,
+        identifiers=identifiers + ["anotheridentifier.com"],
+        oauth_client_id=oauth_client_id,
+        oauth_client_secret=oauth_client_secret,
+        oauth_issuer_id=oauth_issuer_id,
+        oauth_issuer_location=oauth_issuer_location,
+    )
+
+    try:
+        sdk.catalog_organization.create_identity_provider(new_identity_provider)
+        sdk.catalog_organization.update_identity_provider(update_identity_provider)
+        identity_provider = sdk.catalog_organization.get_identity_provider(identity_provider_id)
+        assert identity_provider.id == identity_provider_id
+        assert identity_provider.attributes.custom_claim_mapping == custom_claim_mapping
+        assert identity_provider.attributes.identifiers == identifiers + ["anotheridentifier.com"]
+        assert identity_provider.attributes.oauth_client_id == oauth_client_id
+        assert identity_provider.attributes.oauth_client_secret is None  # oauth_client_secret is not returned
+        assert identity_provider.attributes.oauth_issuer_id == oauth_issuer_id
+        assert identity_provider.attributes.oauth_issuer_location == oauth_issuer_location
+    finally:
+        sdk.catalog_organization.delete_identity_provider(identity_provider_id)
+        assert len(sdk.catalog_organization.list_identity_providers()) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "layout_identity_providers.yaml"))
+def test_layout_identity_providers(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+
+    idps = sdk.catalog_organization.get_declarative_identity_providers()
+    assert len(idps) == 0
+
+    try:
+        identity_provider_id = "test_identity_provider"
+        custom_claim_mapping = {"email": "email"}
+        identifiers = ["goodtesting.com"]
+        oauth_client_id = "test_client_id"
+        oauth_client_secret = "test_client_secret"
+        oauth_issuer_id = "test_issuer_id"
+        oauth_issuer_location = "https://issuer.goodtesting.com"
+
+        identity_providers_e = [
+            CatalogDeclarativeIdentityProvider(
+                id=identity_provider_id,
+                custom_claim_mapping=custom_claim_mapping,
+                identifiers=identifiers,
+                oauth_client_id=oauth_client_id,
+                oauth_client_secret=oauth_client_secret,
+                oauth_issuer_id=oauth_issuer_id,
+                oauth_issuer_location=oauth_issuer_location,
+            ),
+        ]
+        sdk.catalog_organization.put_declarative_identity_providers(identity_providers_e)
+        identity_providers_o = sdk.catalog_organization.get_declarative_identity_providers()
+        assert identity_providers_o[0].id == identity_providers_e[0].id
+        assert identity_providers_o[0].custom_claim_mapping == identity_providers_e[0].custom_claim_mapping
+        assert identity_providers_o[0].identifiers == identity_providers_e[0].identifiers
+        assert identity_providers_o[0].oauth_client_id == identity_providers_e[0].oauth_client_id
+        assert identity_providers_o[0].oauth_client_secret is None
+        assert identity_providers_o[0].oauth_issuer_id == identity_providers_o[0].oauth_issuer_id
+        assert identity_providers_o[0].oauth_issuer_location == identity_providers_e[0].oauth_issuer_location
+    finally:
+        sdk.catalog_organization.put_declarative_identity_providers([])
+        idps = sdk.catalog_organization.get_declarative_identity_providers()
+        assert len(idps) == 0

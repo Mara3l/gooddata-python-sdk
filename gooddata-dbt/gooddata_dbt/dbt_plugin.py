@@ -5,7 +5,7 @@ from argparse import Namespace
 from asyncio import Semaphore
 from pathlib import Path
 from time import time
-from typing import List, Optional
+from typing import Optional
 
 import tabulate
 import yaml
@@ -36,7 +36,7 @@ def generate_and_put_ldm(
     data_source_id: str,
     workspace_id: str,
     dbt_tables: DbtModelTables,
-    model_ids: Optional[List[str]],
+    model_ids: Optional[list[str]],
 ) -> None:
     scan_request = CatalogScanModelRequest(scan_tables=True, scan_views=True)
     logger.info(f"Scan data source {data_source_id=}")
@@ -66,9 +66,9 @@ def create_workspace(
 def deploy_ldm(
     logger: logging.Logger,
     args: Namespace,
-    all_model_ids: List[str],
+    all_model_ids: list[str],
     sdk_wrapper: GoodDataSdkWrapper,
-    model_ids: Optional[List[str]],
+    model_ids: Optional[list[str]],
     workspace_id: str,
 ) -> None:
     logger.info("Generate and put LDM")
@@ -83,7 +83,7 @@ def deploy_ldm(
 def register_data_source(
     logger: logging.Logger,
     args: Namespace,
-    all_model_ids: List[str],
+    all_model_ids: list[str],
     sdk_wrapper: GoodDataSdkWrapper,
 ) -> None:
     dbt_profiles = DbtProfiles(args)
@@ -186,7 +186,7 @@ async def test_visualizations(
     logger: logging.Logger,
     sdk_wrapper: GoodDataSdkWrapper,
     workspace_id: str,
-    skip_tests: Optional[List[str]],
+    skip_tests: Optional[list[str]],
     test_visualizations_parallelism: int = 1,
 ) -> None:
     start = time()
@@ -216,30 +216,29 @@ def create_localized_workspaces(
 ) -> None:
     if data_product.localization is None:
         return
+    try:
+        from deep_translator import GoogleTranslator
+    except ImportError:
+        logger.warning(
+            "create_localized_workspaces: deep_translator module not found, will not be able to localize workspaces"
+        )
     for to in data_product.localization.to:
-        try:
-            from deep_translator import GoogleTranslator
-
-            translator_func = GoogleTranslator(
-                source=data_product.localization.from_language, target=to.language
-            ).translate_batch
-            logger.info(f"create_localized_workspaces layout_root_path={GOODDATA_LAYOUTS_DIR / data_product.id}")
-            sdk_facade.generate_localized_workspaces(
-                workspace_id,
-                to=to,
-                data_product=data_product,
-                translator_func=translator_func,
-                layout_path=GOODDATA_LAYOUTS_DIR / data_product.id,
-                provision_workspace=True,
-                store_layouts=False,
-            )
-        except ImportError:
-            logger.warning(
-                "create_localized_workspaces: deep_translator module not found, will not be able to localize workspaces"
-            )
+        translator_func = GoogleTranslator(
+            source=data_product.localization.from_language, target=to.language
+        ).translate_batch
+        logger.info(f"create_localized_workspaces layout_root_path={GOODDATA_LAYOUTS_DIR / data_product.id}")
+        sdk_facade.generate_localized_workspaces(
+            workspace_id,
+            to=to,
+            data_product=data_product,
+            translator_func=translator_func,
+            layout_path=GOODDATA_LAYOUTS_DIR / data_product.id,
+            provision_workspace=True,
+            store_layouts=False,
+        )
 
 
-def get_table(data: List[list], headers: List[str], fmt: str) -> str:
+def get_table(data: list[list], headers: list[str], fmt: str) -> str:
     return tabulate.tabulate(data, headers=headers, tablefmt=fmt)
 
 
@@ -247,7 +246,7 @@ def dbt_cloud_stats_degradations(
     args: Namespace,
     logger: logging.Logger,
     environment_id: str,
-    model_executions: List[DbtExecution],
+    model_executions: list[DbtExecution],
     dbt_conn: DbtConnection,
 ) -> None:
     logger.info("Get stats for historical executions...")
@@ -289,16 +288,16 @@ def dbt_cloud_stats_degradations(
 def dbt_cloud_stats(
     args: Namespace,
     logger: logging.Logger,
-    all_model_ids: List[str],
+    all_model_ids: list[str],
     environment_id: str,
 ) -> None:
     logger.info("Get stats for last execution...")
     dbt_conn = DbtConnection(credentials=DbtCredentials(account_id=args.account_id, token=args.token))
     dbt_tables = DbtModelTables.from_local(args.gooddata_upper_case, all_model_ids)
     model_executions = dbt_conn.get_last_execution(environment_id, len(dbt_tables.tables))
-    exec_list = []
-    for execution in model_executions:
-        exec_list.append([execution.unique_id, round(execution.execution_info.execution_time, 2)])
+    exec_list = [
+        [execution.unique_id, round(execution.execution_info.execution_time, 2)] for execution in model_executions
+    ]
 
     headers = ["Model ID", "Duration(s)"]
     pretty_table = get_table(exec_list, headers, "outline")
@@ -307,7 +306,7 @@ def dbt_cloud_stats(
     dbt_cloud_stats_degradations(args, logger, environment_id, model_executions, dbt_conn)
 
 
-def dbt_cloud_run(args: Namespace, logger: logging.Logger, all_model_ids: List[str]) -> None:
+def dbt_cloud_run(args: Namespace, logger: logging.Logger, all_model_ids: list[str]) -> None:
     dbt_conn = DbtConnection(credentials=DbtCredentials(account_id=args.account_id, token=args.token))
     logger.info("#" * 80)
     logger.info(f"Starting job in dbt cloud with job_id={args.job_id}")

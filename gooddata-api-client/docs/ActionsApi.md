@@ -4,12 +4,20 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**ai_chat**](ActionsApi.md#ai_chat) | **POST** /api/v1/actions/workspaces/{workspaceId}/ai/chat | (BETA) Chat with AI
+[**ai_chat_history**](ActionsApi.md#ai_chat_history) | **POST** /api/v1/actions/workspaces/{workspaceId}/ai/chatHistory | (BETA) Get Chat History
+[**ai_chat_stream**](ActionsApi.md#ai_chat_stream) | **POST** /api/v1/actions/workspaces/{workspaceId}/ai/chatStream | (BETA) Chat with AI
+[**ai_route**](ActionsApi.md#ai_route) | **POST** /api/v1/actions/workspaces/{workspaceId}/ai/route | (BETA) Route to supported use cases based on this input query.
+[**ai_search**](ActionsApi.md#ai_search) | **POST** /api/v1/actions/workspaces/{workspaceId}/ai/search | (BETA) Semantic Search in Metadata
 [**all_platform_usage**](ActionsApi.md#all_platform_usage) | **GET** /api/v1/actions/collectUsage | Info about the platform usage.
+[**anomaly_detection**](ActionsApi.md#anomaly_detection) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/functions/anomalyDetection/{resultId} | (EXPERIMENTAL) Smart functions - Anomaly Detection
+[**anomaly_detection_result**](ActionsApi.md#anomaly_detection_result) | **GET** /api/v1/actions/workspaces/{workspaceId}/execution/functions/anomalyDetection/result/{resultId} | (EXPERIMENTAL) Smart functions - Anomaly Detection Result
 [**available_assignees**](ActionsApi.md#available_assignees) | **GET** /api/v1/actions/workspaces/{workspaceId}/analyticalDashboards/{dashboardId}/availableAssignees | Get Available Assignees
 [**check_entity_overrides**](ActionsApi.md#check_entity_overrides) | **POST** /api/v1/actions/workspaces/{workspaceId}/checkEntityOverrides | Finds entities with given ID in hierarchy.
 [**clean_translations**](ActionsApi.md#clean_translations) | **POST** /api/v1/actions/workspaces/{workspaceId}/translations/clean | Cleans up translations.
 [**clustering**](ActionsApi.md#clustering) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/functions/clustering/{resultId} | (EXPERIMENTAL) Smart functions - Clustering
 [**clustering_result**](ActionsApi.md#clustering_result) | **GET** /api/v1/actions/workspaces/{workspaceId}/execution/functions/clustering/result/{resultId} | (EXPERIMENTAL) Smart functions - Clustering Result
+[**column_statistics**](ActionsApi.md#column_statistics) | **POST** /api/v1/actions/dataSources/{dataSourceId}/computeColumnStatistics | (EXPERIMENTAL) Compute column statistics
 [**compute_label_elements_post**](ActionsApi.md#compute_label_elements_post) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/collectLabelElements | Listing of label values. The resulting data are limited by the static platform limit to the maximum of 10000 rows.
 [**compute_report**](ActionsApi.md#compute_report) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/afm/execute | Executes analytical request and returns link to the result
 [**compute_valid_descendants**](ActionsApi.md#compute_valid_descendants) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/afm/computeValidDescendants | (BETA) Valid descendants
@@ -30,10 +38,16 @@ Method | HTTP request | Description
 [**get_translation_tags**](ActionsApi.md#get_translation_tags) | **GET** /api/v1/actions/workspaces/{workspaceId}/translations | Get translation tags.
 [**inherited_entity_conflicts**](ActionsApi.md#inherited_entity_conflicts) | **GET** /api/v1/actions/workspaces/{workspaceId}/inheritedEntityConflicts | Finds identifier conflicts in workspace hierarchy.
 [**inherited_entity_prefixes**](ActionsApi.md#inherited_entity_prefixes) | **GET** /api/v1/actions/workspaces/{workspaceId}/inheritedEntityPrefixes | Get used entity prefixes in hierarchy
+[**key_driver_analysis**](ActionsApi.md#key_driver_analysis) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/computeKeyDrivers | (EXPERIMENTAL) Compute key driver analysis
+[**key_driver_analysis_result**](ActionsApi.md#key_driver_analysis_result) | **GET** /api/v1/actions/workspaces/{workspaceId}/execution/computeKeyDrivers/result/{resultId} | (EXPERIMENTAL) Get key driver analysis result
+[**list_workspace_user_groups**](ActionsApi.md#list_workspace_user_groups) | **GET** /api/v1/actions/workspaces/{workspaceId}/userGroups | 
+[**list_workspace_users**](ActionsApi.md#list_workspace_users) | **GET** /api/v1/actions/workspaces/{workspaceId}/users | 
 [**manage_dashboard_permissions**](ActionsApi.md#manage_dashboard_permissions) | **POST** /api/v1/actions/workspaces/{workspaceId}/analyticalDashboards/{dashboardId}/managePermissions | Manage Permissions for a Dashboard
 [**manage_data_source_permissions**](ActionsApi.md#manage_data_source_permissions) | **POST** /api/v1/actions/dataSources/{dataSourceId}/managePermissions | Manage Permissions for a Data Source
 [**manage_organization_permissions**](ActionsApi.md#manage_organization_permissions) | **POST** /api/v1/actions/organization/managePermissions | Manage Permissions for a Organization
 [**manage_workspace_permissions**](ActionsApi.md#manage_workspace_permissions) | **POST** /api/v1/actions/workspaces/{workspaceId}/managePermissions | Manage Permissions for a Workspace
+[**metadata_sync**](ActionsApi.md#metadata_sync) | **POST** /api/v1/actions/workspaces/{workspaceId}/metadataSync | (BETA) Sync Metadata to other services
+[**metadata_sync_organization**](ActionsApi.md#metadata_sync_organization) | **POST** /api/v1/actions/organization/metadataSync | (BETA) Sync organization scope Metadata to other services
 [**overridden_child_entities**](ActionsApi.md#overridden_child_entities) | **GET** /api/v1/actions/workspaces/{workspaceId}/overriddenChildEntities | Finds identifier overrides in workspace hierarchy.
 [**particular_platform_usage**](ActionsApi.md#particular_platform_usage) | **POST** /api/v1/actions/collectUsage | Info about the platform usage for particular items.
 [**register_upload_notification**](ActionsApi.md#register_upload_notification) | **POST** /api/v1/actions/dataSources/{dataSourceId}/uploadNotification | Register an upload notification
@@ -49,9 +63,409 @@ Method | HTTP request | Description
 [**set_translations**](ActionsApi.md#set_translations) | **POST** /api/v1/actions/workspaces/{workspaceId}/translations/set | Set translations for entities.
 [**test_data_source**](ActionsApi.md#test_data_source) | **POST** /api/v1/actions/dataSources/{dataSourceId}/test | Test data source connection by data source id
 [**test_data_source_definition**](ActionsApi.md#test_data_source_definition) | **POST** /api/v1/actions/dataSource/test | Test connection by data source definition
+[**unsubscribe_all_automations**](ActionsApi.md#unsubscribe_all_automations) | **DELETE** /api/v1/actions/organization/automations/unsubscribe | Unsubscribe from all automations in all workspaces
+[**unsubscribe_automation**](ActionsApi.md#unsubscribe_automation) | **DELETE** /api/v1/actions/workspaces/{workspaceId}/automations/{automationId}/unsubscribe | Unsubscribe from an automation
+[**unsubscribe_workspace_automations**](ActionsApi.md#unsubscribe_workspace_automations) | **DELETE** /api/v1/actions/workspaces/{workspaceId}/automations/unsubscribe | Unsubscribe from all automations in the workspace
 [**workspace_resolve_all_settings**](ActionsApi.md#workspace_resolve_all_settings) | **GET** /api/v1/actions/workspaces/{workspaceId}/resolveSettings | Values for all settings.
 [**workspace_resolve_settings**](ActionsApi.md#workspace_resolve_settings) | **POST** /api/v1/actions/workspaces/{workspaceId}/resolveSettings | Values for selected settings.
 
+
+# **ai_chat**
+> ChatResult ai_chat(workspace_id, chat_request)
+
+(BETA) Chat with AI
+
+(BETA) Combines multiple use cases such as search, create visualizations, ...
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.chat_result import ChatResult
+from gooddata_api_client.model.chat_request import ChatRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    chat_request = ChatRequest(
+        limit_create=3,
+        limit_create_context=10,
+        limit_search=5,
+        question="question_example",
+        relevant_score_threshold=0.4,
+        search_score_threshold=0.9,
+        thread_id_suffix="thread_id_suffix_example",
+        title_to_descriptor_ratio=0.7,
+        user_context=UserContext(
+            active_object=ActiveObjectIdentification(
+                id="id_example",
+                type="type_example",
+                workspace_id="workspace_id_example",
+            ),
+        ),
+    ) # ChatRequest | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (BETA) Chat with AI
+        api_response = api_instance.ai_chat(workspace_id, chat_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->ai_chat: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **chat_request** | [**ChatRequest**](ChatRequest.md)|  |
+
+### Return type
+
+[**ChatResult**](ChatResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **ai_chat_history**
+> ChatHistoryResult ai_chat_history(workspace_id, chat_history_request)
+
+(BETA) Get Chat History
+
+(BETA) Post thread ID (and optionally interaction ID) to get full/partial chat history.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.chat_history_result import ChatHistoryResult
+from gooddata_api_client.model.chat_history_request import ChatHistoryRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    chat_history_request = ChatHistoryRequest(
+        chat_history_interaction_id=1,
+        reset=True,
+        thread_id_suffix="thread_id_suffix_example",
+        user_feedback="POSITIVE",
+    ) # ChatHistoryRequest | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (BETA) Get Chat History
+        api_response = api_instance.ai_chat_history(workspace_id, chat_history_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->ai_chat_history: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **chat_history_request** | [**ChatHistoryRequest**](ChatHistoryRequest.md)|  |
+
+### Return type
+
+[**ChatHistoryResult**](ChatHistoryResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **ai_chat_stream**
+> [dict] ai_chat_stream(workspace_id, chat_request)
+
+(BETA) Chat with AI
+
+(BETA) Combines multiple use cases such as search, create visualizations, ...
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.chat_request import ChatRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    chat_request = ChatRequest(
+        limit_create=3,
+        limit_create_context=10,
+        limit_search=5,
+        question="question_example",
+        relevant_score_threshold=0.4,
+        search_score_threshold=0.9,
+        thread_id_suffix="thread_id_suffix_example",
+        title_to_descriptor_ratio=0.7,
+        user_context=UserContext(
+            active_object=ActiveObjectIdentification(
+                id="id_example",
+                type="type_example",
+                workspace_id="workspace_id_example",
+            ),
+        ),
+    ) # ChatRequest | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (BETA) Chat with AI
+        api_response = api_instance.ai_chat_stream(workspace_id, chat_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->ai_chat_stream: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **chat_request** | [**ChatRequest**](ChatRequest.md)|  |
+
+### Return type
+
+**[dict]**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: text/event-stream
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **ai_route**
+> RouteResult ai_route(workspace_id, route_request)
+
+(BETA) Route to supported use cases based on this input query.
+
+(BETA) Uses similarity (e.g. cosine distance) to find most similar use cases.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.route_result import RouteResult
+from gooddata_api_client.model.route_request import RouteRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    route_request = RouteRequest(
+        question="question_example",
+    ) # RouteRequest | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (BETA) Route to supported use cases based on this input query.
+        api_response = api_instance.ai_route(workspace_id, route_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->ai_route: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **route_request** | [**RouteRequest**](RouteRequest.md)|  |
+
+### Return type
+
+[**RouteResult**](RouteResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **ai_search**
+> SearchResult ai_search(workspace_id, search_request)
+
+(BETA) Semantic Search in Metadata
+
+(BETA) Uses similarity (e.g. cosine distance) search to find top X most similar metadata objects.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.search_result import SearchResult
+from gooddata_api_client.model.search_request import SearchRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    search_request = SearchRequest(
+        deep_search=False,
+        limit=10,
+        object_types=[
+            "attribute",
+        ],
+        question="question_example",
+        relevant_score_threshold=0.3,
+        title_to_descriptor_ratio=0.7,
+    ) # SearchRequest | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (BETA) Semantic Search in Metadata
+        api_response = api_instance.ai_search(workspace_id, search_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->ai_search: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **search_request** | [**SearchRequest**](SearchRequest.md)|  |
+
+### Return type
+
+[**SearchResult**](SearchResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **all_platform_usage**
 > [PlatformUsage] all_platform_usage()
@@ -97,6 +511,173 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**[PlatformUsage]**](PlatformUsage.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **anomaly_detection**
+> SmartFunctionResponse anomaly_detection(workspace_id, result_id, anomaly_detection_request)
+
+(EXPERIMENTAL) Smart functions - Anomaly Detection
+
+(EXPERIMENTAL) Computes anomaly detection.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.anomaly_detection_request import AnomalyDetectionRequest
+from gooddata_api_client.model.smart_function_response import SmartFunctionResponse
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    result_id = "9bd52018570364264fcf62d373da6bed313120e8" # str | Input result ID to be used in the computation
+    anomaly_detection_request = AnomalyDetectionRequest(
+        sensitivity=3.14,
+    ) # AnomalyDetectionRequest | 
+    skip_cache = False # bool | Ignore all caches during execution of current request. (optional) if omitted the server will use the default value of False
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (EXPERIMENTAL) Smart functions - Anomaly Detection
+        api_response = api_instance.anomaly_detection(workspace_id, result_id, anomaly_detection_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->anomaly_detection: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # (EXPERIMENTAL) Smart functions - Anomaly Detection
+        api_response = api_instance.anomaly_detection(workspace_id, result_id, anomaly_detection_request, skip_cache=skip_cache)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->anomaly_detection: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **result_id** | **str**| Input result ID to be used in the computation |
+ **anomaly_detection_request** | [**AnomalyDetectionRequest**](AnomalyDetectionRequest.md)|  |
+ **skip_cache** | **bool**| Ignore all caches during execution of current request. | [optional] if omitted the server will use the default value of False
+
+### Return type
+
+[**SmartFunctionResponse**](SmartFunctionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **anomaly_detection_result**
+> AnomalyDetectionResult anomaly_detection_result(workspace_id, result_id)
+
+(EXPERIMENTAL) Smart functions - Anomaly Detection Result
+
+(EXPERIMENTAL) Gets anomalies.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.anomaly_detection_result import AnomalyDetectionResult
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    result_id = "a9b28f9dc55f37ea9f4a5fb0c76895923591e781" # str | Result ID
+    offset = 1 # int |  (optional)
+    limit = 1 # int |  (optional)
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (EXPERIMENTAL) Smart functions - Anomaly Detection Result
+        api_response = api_instance.anomaly_detection_result(workspace_id, result_id)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->anomaly_detection_result: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # (EXPERIMENTAL) Smart functions - Anomaly Detection Result
+        api_response = api_instance.anomaly_detection_result(workspace_id, result_id, offset=offset, limit=limit)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->anomaly_detection_result: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **result_id** | **str**| Result ID |
+ **offset** | **int**|  | [optional]
+ **limit** | **int**|  | [optional]
+
+### Return type
+
+[**AnomalyDetectionResult**](AnomalyDetectionResult.md)
 
 ### Authorization
 
@@ -360,6 +941,7 @@ with gooddata_api_client.ApiClient() as api_client:
     result_id = "9bd52018570364264fcf62d373da6bed313120e8" # str | Input result ID to be used in the computation
     clustering_request = ClusteringRequest(
         number_of_clusters=1,
+        threshold=0.03,
     ) # ClusteringRequest | 
     skip_cache = False # bool | Ignore all caches during execution of current request. (optional) if omitted the server will use the default value of False
 
@@ -484,6 +1066,88 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **column_statistics**
+> ColumnStatisticsResponse column_statistics(data_source_id, column_statistics_request)
+
+(EXPERIMENTAL) Compute column statistics
+
+(EXPERIMENTAL) Computes the requested statistical parameters of a column in a data source.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.column_statistics_response import ColumnStatisticsResponse
+from gooddata_api_client.model.column_statistics_request import ColumnStatisticsRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    data_source_id = "dataSourceId_example" # str | 
+    column_statistics_request = ColumnStatisticsRequest(
+        column_name="column_name_example",
+        frequency=FrequencyProperties(
+            value_limit=10,
+        ),
+        _from=ColumnStatisticsRequestFrom(None),
+        histogram=HistogramProperties(
+            bucket_count=1,
+        ),
+        statistics=[
+            "COUNT",
+        ],
+    ) # ColumnStatisticsRequest | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (EXPERIMENTAL) Compute column statistics
+        api_response = api_instance.column_statistics(data_source_id, column_statistics_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->column_statistics: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **data_source_id** | **str**|  |
+ **column_statistics_request** | [**ColumnStatisticsRequest**](ColumnStatisticsRequest.md)|  |
+
+### Return type
+
+[**ColumnStatisticsResponse**](ColumnStatisticsResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 
@@ -926,7 +1590,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **create_pdf_export**
-> ExportResponse create_pdf_export(workspace_id, pdf_export_request)
+> ExportResponse create_pdf_export(workspace_id, visual_export_request)
 
 Create visual - pdf export request
 
@@ -940,7 +1604,7 @@ import time
 import gooddata_api_client
 from gooddata_api_client.api import actions_api
 from gooddata_api_client.model.export_response import ExportResponse
-from gooddata_api_client.model.pdf_export_request import PdfExportRequest
+from gooddata_api_client.model.visual_export_request import VisualExportRequest
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost
 # See configuration.py for a list of all supported configuration parameters.
@@ -954,16 +1618,16 @@ with gooddata_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = actions_api.ActionsApi(api_client)
     workspace_id = "workspaceId_example" # str | 
-    pdf_export_request = PdfExportRequest(
+    visual_export_request = VisualExportRequest(
         dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
         file_name="filename",
         metadata={},
-    ) # PdfExportRequest | 
+    ) # VisualExportRequest | 
 
     # example passing only required values which don't have defaults set
     try:
         # Create visual - pdf export request
-        api_response = api_instance.create_pdf_export(workspace_id, pdf_export_request)
+        api_response = api_instance.create_pdf_export(workspace_id, visual_export_request)
         pprint(api_response)
     except gooddata_api_client.ApiException as e:
         print("Exception when calling ActionsApi->create_pdf_export: %s\n" % e)
@@ -975,7 +1639,7 @@ with gooddata_api_client.ApiClient() as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**|  |
- **pdf_export_request** | [**PdfExportRequest**](PdfExportRequest.md)|  |
+ **visual_export_request** | [**VisualExportRequest**](VisualExportRequest.md)|  |
 
 ### Return type
 
@@ -1045,6 +1709,8 @@ with gooddata_api_client.ApiClient() as api_client:
         execution_result="ff483727196c9dc862c7fd3a5a84df55c96d61a4",
         file_name="result",
         format="CSV",
+        metadata=JsonNode(),
+        related_dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
         settings=Settings(
             merge_headers=True,
             pdf_page_size="a4 landscape",
@@ -1512,9 +2178,11 @@ with gooddata_api_client.ApiClient() as api_client:
         date_granularities="all",
         denorm_prefix="dr",
         fact_prefix="f",
-        generate_long_ids=True,
-        grain_prefix="g",
-        grain_reference_prefix="gr",
+        generate_long_ids=False,
+        grain_multivalue_reference_prefix="grmr",
+        grain_prefix="gr",
+        grain_reference_prefix="grr",
+        multivalue_reference_prefix="mr",
         pdm=PdmLdmRequest(
             sqls=[
                 PdmSql(
@@ -1526,6 +2194,19 @@ with gooddata_api_client.ApiClient() as api_client:
                     ],
                     statement="select * from abc",
                     title="My special dataset",
+                ),
+            ],
+            table_overrides=[
+                TableOverride(
+                    columns=[
+                        ColumnOverride(
+                            label_target_column="users",
+                            label_type="HYPERLINK",
+                            ldm_type_override="FACT",
+                            name="column_name",
+                        ),
+                    ],
+                    path=["schema","table_name"],
                 ),
             ],
             tables=[
@@ -1548,7 +2229,7 @@ with gooddata_api_client.ApiClient() as api_client:
         ),
         primary_label_prefix="pl",
         reference_prefix="r",
-        secondary_label_prefix="sl",
+        secondary_label_prefix="ls",
         separator="__",
         table_prefix="out_table",
         view_prefix="out_view",
@@ -2208,6 +2889,337 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **key_driver_analysis**
+> KeyDriversResponse key_driver_analysis(workspace_id, key_drivers_request)
+
+(EXPERIMENTAL) Compute key driver analysis
+
+(EXPERIMENTAL) Computes key driver analysis for the provided execution definition.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.key_drivers_response import KeyDriversResponse
+from gooddata_api_client.model.key_drivers_request import KeyDriversRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    key_drivers_request = KeyDriversRequest(
+        aux_metrics=[
+            MeasureItem(
+                definition=MeasureDefinition(),
+                local_identifier="metric_1",
+            ),
+        ],
+        metric=MeasureItem(
+            definition=MeasureDefinition(),
+            local_identifier="metric_1",
+        ),
+        sort_direction="DESC",
+    ) # KeyDriversRequest | 
+    skip_cache = False # bool | Ignore all caches during execution of current request. (optional) if omitted the server will use the default value of False
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (EXPERIMENTAL) Compute key driver analysis
+        api_response = api_instance.key_driver_analysis(workspace_id, key_drivers_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->key_driver_analysis: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # (EXPERIMENTAL) Compute key driver analysis
+        api_response = api_instance.key_driver_analysis(workspace_id, key_drivers_request, skip_cache=skip_cache)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->key_driver_analysis: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **key_drivers_request** | [**KeyDriversRequest**](KeyDriversRequest.md)|  |
+ **skip_cache** | **bool**| Ignore all caches during execution of current request. | [optional] if omitted the server will use the default value of False
+
+### Return type
+
+[**KeyDriversResponse**](KeyDriversResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **key_driver_analysis_result**
+> KeyDriversResult key_driver_analysis_result(workspace_id, result_id)
+
+(EXPERIMENTAL) Get key driver analysis result
+
+(EXPERIMENTAL) Gets key driver analysis.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.key_drivers_result import KeyDriversResult
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    result_id = "a9b28f9dc55f37ea9f4a5fb0c76895923591e781" # str | Result ID
+    offset = 1 # int |  (optional)
+    limit = 1 # int |  (optional)
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (EXPERIMENTAL) Get key driver analysis result
+        api_response = api_instance.key_driver_analysis_result(workspace_id, result_id)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->key_driver_analysis_result: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # (EXPERIMENTAL) Get key driver analysis result
+        api_response = api_instance.key_driver_analysis_result(workspace_id, result_id, offset=offset, limit=limit)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->key_driver_analysis_result: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **result_id** | **str**| Result ID |
+ **offset** | **int**|  | [optional]
+ **limit** | **int**|  | [optional]
+
+### Return type
+
+[**KeyDriversResult**](KeyDriversResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **list_workspace_user_groups**
+> WorkspaceUserGroups list_workspace_user_groups(workspace_id)
+
+
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.workspace_user_groups import WorkspaceUserGroups
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+    page = page=0 # int | Zero-based page index (0..N) (optional) if omitted the server will use the default value of 0
+    size = size=20 # int | The size of the page to be returned. (optional) if omitted the server will use the default value of 20
+    name = "name=charles" # str | Filter by user name. Note that user name is case insensitive. (optional)
+
+    # example passing only required values which don't have defaults set
+    try:
+        api_response = api_instance.list_workspace_user_groups(workspace_id)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->list_workspace_user_groups: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        api_response = api_instance.list_workspace_user_groups(workspace_id, page=page, size=size, name=name)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->list_workspace_user_groups: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+ **page** | **int**| Zero-based page index (0..N) | [optional] if omitted the server will use the default value of 0
+ **size** | **int**| The size of the page to be returned. | [optional] if omitted the server will use the default value of 20
+ **name** | **str**| Filter by user name. Note that user name is case insensitive. | [optional]
+
+### Return type
+
+[**WorkspaceUserGroups**](WorkspaceUserGroups.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **list_workspace_users**
+> WorkspaceUsers list_workspace_users(workspace_id)
+
+
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from gooddata_api_client.model.workspace_users import WorkspaceUsers
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+    page = page=0 # int | Zero-based page index (0..N) (optional) if omitted the server will use the default value of 0
+    size = size=20 # int | The size of the page to be returned. (optional) if omitted the server will use the default value of 20
+    name = "name=charles" # str | Filter by user name. Note that user name is case insensitive. (optional)
+
+    # example passing only required values which don't have defaults set
+    try:
+        api_response = api_instance.list_workspace_users(workspace_id)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->list_workspace_users: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        api_response = api_instance.list_workspace_users(workspace_id, page=page, size=size, name=name)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->list_workspace_users: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+ **page** | **int**| Zero-based page index (0..N) | [optional] if omitted the server will use the default value of 0
+ **size** | **int**| The size of the page to be returned. | [optional] if omitted the server will use the default value of 20
+ **name** | **str**| Filter by user name. Note that user name is case insensitive. | [optional]
+
+### Return type
+
+[**WorkspaceUsers**](WorkspaceUsers.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **manage_dashboard_permissions**
 > manage_dashboard_permissions(workspace_id, dashboard_id, manage_dashboard_permissions_request_inner)
 
@@ -2510,6 +3522,132 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **metadata_sync**
+> metadata_sync(workspace_id)
+
+(BETA) Sync Metadata to other services
+
+(BETA) Temporary solution. Later relevant metadata actions will trigger it in its scope only.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (BETA) Sync Metadata to other services
+        api_instance.metadata_sync(workspace_id)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->metadata_sync: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **metadata_sync_organization**
+> metadata_sync_organization()
+
+(BETA) Sync organization scope Metadata to other services
+
+(BETA) Temporary solution. Later relevant metadata actions will trigger sync in their scope only.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+
+    # example, this endpoint has no required or optional parameters
+    try:
+        # (BETA) Sync organization scope Metadata to other services
+        api_instance.metadata_sync_organization()
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->metadata_sync_organization: %s\n" % e)
+```
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -3511,10 +4649,8 @@ with gooddata_api_client.ApiClient() as api_client:
     api_instance = actions_api.ActionsApi(api_client)
     data_source_id = "myPostgres" # str | Data source id
     test_request = TestRequest(
-        cache_path=[
-            "cache_path_example",
-        ],
-        enable_caching=False,
+        client_id="client_id_example",
+        client_secret="client_secret_example",
         parameters=[
             DataSourceParameter(
                 name="name_example",
@@ -3522,6 +4658,8 @@ with gooddata_api_client.ApiClient() as api_client:
             ),
         ],
         password="admin123",
+        private_key="private_key_example",
+        private_key_passphrase="private_key_passphrase_example",
         schema="public",
         token="token_example",
         url="jdbc:postgresql://localhost:5432/db_name",
@@ -3596,6 +4734,8 @@ with gooddata_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = actions_api.ActionsApi(api_client)
     test_definition_request = TestDefinitionRequest(
+        client_id="client_id_example",
+        client_secret="client_secret_example",
         parameters=[
             DataSourceParameter(
                 name="name_example",
@@ -3603,6 +4743,8 @@ with gooddata_api_client.ApiClient() as api_client:
             ),
         ],
         password="admin123",
+        private_key="private_key_example",
+        private_key_passphrase="private_key_passphrase_example",
         schema="public",
         token="token_example",
         type="POSTGRESQL",
@@ -3645,6 +4787,193 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | The result of the test of a data source connection. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **unsubscribe_all_automations**
+> unsubscribe_all_automations()
+
+Unsubscribe from all automations in all workspaces
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+
+    # example, this endpoint has no required or optional parameters
+    try:
+        # Unsubscribe from all automations in all workspaces
+        api_instance.unsubscribe_all_automations()
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->unsubscribe_all_automations: %s\n" % e)
+```
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | No Content |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **unsubscribe_automation**
+> unsubscribe_automation(workspace_id, automation_id)
+
+Unsubscribe from an automation
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+    automation_id = "automationId_example" # str | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Unsubscribe from an automation
+        api_instance.unsubscribe_automation(workspace_id, automation_id)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->unsubscribe_automation: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+ **automation_id** | **str**|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | No Content |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **unsubscribe_workspace_automations**
+> unsubscribe_workspace_automations(workspace_id)
+
+Unsubscribe from all automations in the workspace
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import actions_api
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = actions_api.ActionsApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Unsubscribe from all automations in the workspace
+        api_instance.unsubscribe_workspace_automations(workspace_id)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ActionsApi->unsubscribe_workspace_automations: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | No Content |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

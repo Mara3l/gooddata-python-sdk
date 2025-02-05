@@ -1,7 +1,8 @@
 # (C) 2022 GoodData Corporation
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, TypeVar
+import builtins
+from typing import Any, ClassVar, Optional, TypeVar
 
 import attr
 from cattrs import structure
@@ -13,7 +14,14 @@ from gooddata_api_client.model.json_api_data_source_patch_attributes import Json
 from gooddata_api_client.model.json_api_data_source_patch_document import JsonApiDataSourcePatchDocument
 
 from gooddata_sdk.catalog.base import Base, value_in_allowed
-from gooddata_sdk.catalog.entity import BasicCredentials, Credentials, TokenCredentials, TokenCredentialsFromFile
+from gooddata_sdk.catalog.entity import (
+    BasicCredentials,
+    ClientSecretCredentials,
+    Credentials,
+    KeyPairCredentials,
+    TokenCredentials,
+    TokenCredentialsFromFile,
+)
 
 U = TypeVar("U", bound="CatalogDataSourceBase")
 
@@ -25,15 +33,15 @@ def db_attrs_with_template(instance: CatalogDataSource, *args: Any) -> None:
 
 @attr.s(auto_attribs=True, kw_only=True, eq=False)
 class CatalogDataSourceBase(Base):
-    _SUPPORTED_CREDENTIALS: ClassVar[List[Type[Credentials]]] = [
+    _SUPPORTED_CREDENTIALS: ClassVar[list[type[Credentials]]] = [
         BasicCredentials,
+        ClientSecretCredentials,
         TokenCredentials,
         TokenCredentialsFromFile,
+        KeyPairCredentials,
     ]
     _DELIMITER: ClassVar[str] = "&"
-    _ATTRIBUTES: ClassVar[List[str]] = [
-        "enable_caching",
-        "cache_path",
+    _ATTRIBUTES: ClassVar[list[str]] = [
         "cache_strategy",
         "url",
         "parameters",
@@ -47,11 +55,9 @@ class CatalogDataSourceBase(Base):
     type: str = attr.field()
     schema: str
     url: Optional[str] = None
-    enable_caching: Optional[bool] = None
-    cache_path: Optional[List[str]] = None
     cache_strategy: Optional[str] = None
-    parameters: Optional[List[Dict[str, str]]] = None
-    decoded_parameters: Optional[List[Dict[str, str]]] = None
+    parameters: Optional[list[dict[str, str]]] = None
+    decoded_parameters: Optional[list[dict[str, str]]] = None
     credentials: Credentials = attr.field(repr=False)
 
     @type.validator
@@ -74,7 +80,7 @@ class CatalogDataSourceBase(Base):
         )
 
     @classmethod
-    def from_api(cls: Type[U], entity: Dict[str, Any]) -> U:
+    def from_api(cls: builtins.type[U], entity: dict[str, Any]) -> U:
         attributes = entity["attributes"]
         credentials = Credentials.create(cls._SUPPORTED_CREDENTIALS, entity)
         return structure({"id": entity["id"], "credentials": credentials, **attributes}, cls)
@@ -91,8 +97,6 @@ class CatalogDataSourceBase(Base):
             and self.name == other.name
             and self.type == other.type
             and self.schema == other.schema
-            and self.enable_caching == other.enable_caching
-            and self.cache_path == other.cache_path
             and self.parameters == other.parameters
         )
 
@@ -104,7 +108,7 @@ class CatalogDataSource(CatalogDataSourceBase):
 
     db_vendor: Optional[str] = attr.field(default=None, init=False)
     db_specific_attributes: Optional[DatabaseAttributes] = attr.field(default=None, validator=db_attrs_with_template)
-    url_params: Optional[List[Tuple[str, str]]] = None
+    url_params: Optional[list[tuple[str, str]]] = None
 
     def __attrs_post_init__(self) -> None:
         self.db_vendor = self.db_vendor or self.type.lower()
@@ -256,7 +260,7 @@ class DatabricksAttributes(DatabaseAttributes):
 class CatalogDataSourceDatabricks(CatalogDataSource):
     _URL_TMPL: ClassVar[str] = "jdbc:{db_vendor}://{host}:{port}/default;httpPath={http_path}"
     type: str = "DATABRICKS"
-    parameters: List[Dict[str, str]]
+    parameters: list[dict[str, str]]
     db_specific_attributes: DatabricksAttributes
 
     def __attrs_post_init__(self) -> None:
@@ -279,3 +283,14 @@ class CatalogDataSourceMySql(CatalogDataSource):
 class CatalogDataSourceMariaDb(CatalogDataSourceMySql):
     type: str = "MARIADB"
     db_vendor: str = "mariadb"
+
+
+@attr.s(auto_attribs=True, kw_only=True)
+class MotherDuckAttributes(DatabaseAttributes):
+    db_name: str
+
+
+@attr.s(auto_attribs=True, kw_only=True)
+class CatalogDataSourceMotherDuck(CatalogDataSource):
+    _URL_TMPL: ClassVar[str] = "jdbc:duckdb:md:{db_name}"
+    type: str = "MOTHERDUCK"

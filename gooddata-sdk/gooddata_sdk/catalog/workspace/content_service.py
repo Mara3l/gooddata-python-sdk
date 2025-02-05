@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import functools
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Literal, Optional, Union
 
 import gooddata_api_client.models as afm_models
 from gooddata_api_client.model.elements_request import ElementsRequest
@@ -12,6 +12,7 @@ from gooddata_api_client.model.elements_request import ElementsRequest
 from gooddata_sdk.catalog.catalog_service_base import CatalogServiceBase
 from gooddata_sdk.catalog.data_source.validation.data_source import DataSourceValidator
 from gooddata_sdk.catalog.depends_on import CatalogDependsOn, CatalogDependsOnDateFilter
+from gooddata_sdk.catalog.filter_by import CatalogFilterBy
 from gooddata_sdk.catalog.types import ValidObjects
 from gooddata_sdk.catalog.validate_by_item import CatalogValidateByItem
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.analytics_model.analytics_model import (
@@ -41,7 +42,7 @@ from gooddata_sdk.utils import load_all_entities
 ValidObjectTypes = Union[Attribute, Metric, Filter, CatalogLabel, CatalogFact, CatalogMetric]
 
 # Use typing collection types to support python < py3.9
-ValidObjectsInputType = Union[ValidObjectTypes, List[ValidObjectTypes], ExecutionDefinition]
+ValidObjectsInputType = Union[ValidObjectTypes, list[ValidObjectTypes], ExecutionDefinition]
 
 LabelElementsInputType = Union[str, ObjId]
 
@@ -56,7 +57,7 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
     #  access returned object's properties
 
     def __init__(self, api_client: GoodDataApiClient) -> None:
-        super(CatalogWorkspaceContentService, self).__init__(api_client)
+        super().__init__(api_client)
 
     # Entities methods
 
@@ -102,23 +103,36 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
 
         return CatalogWorkspaceContent.create_workspace_content_catalog(valid_obj_fun, datasets, attributes, metrics)
 
-    def get_attributes_catalog(self, workspace_id: str) -> list[CatalogAttribute]:
+    def get_attributes_catalog(
+        self, workspace_id: str, include: Optional[list[str]] = None, rsql_filter: Optional[str] = None
+    ) -> list[CatalogAttribute]:
         """Retrieve all attributes in a given workspace.
 
         Args:
             workspace_id (str):
                 Workspace identification string e.g. "demo"
+            include (list[str]):
+                Entities to include.
+                Available: datasets, labels, attributeHierarchies, dataset, defaultView, ALL
+            rsql_filter (str):
+                An optional filter to be passed to API.
 
         Returns:
             list[CatalogAttribute]:
                 List of all attributes in a given workspace.
         """
+        available_includes = {"datasets", "labels", "attributeHierarchies", "dataset", "defaultView", "ALL"}
+        include = include if include is not None else ["labels"]
+        if not set(include).issubset(available_includes):
+            raise ValueError(f"Invalid include parameter. Available values: {available_includes}, got: {include}")
         get_attributes = functools.partial(
             self._entities_api.get_all_entities_attributes,
             workspace_id,
-            include=["labels"],
+            include=include,
             _check_return_type=False,
         )
+        if rsql_filter is not None:
+            get_attributes = functools.partial(get_attributes, filter=rsql_filter)
         attributes = load_all_entities(get_attributes)
         catalog_attributes = [CatalogAttribute.from_api(a, side_loads=attributes.included) for a in attributes.data]
         return catalog_attributes
@@ -358,14 +372,14 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
     # Declarative methods for analytics model
 
     def get_declarative_analytics_model(
-        self, workspace_id: str, exclude: Optional[List[str]] = None
+        self, workspace_id: str, exclude: Optional[list[str]] = None
     ) -> CatalogDeclarativeAnalytics:
         """Retrieves declarative analytics model. The model is tied to the workspace and organization.
 
         Args:
             workspace_id (str):
                 Workspace identification string e.g. "demo"
-            exclude (Optional[List[str]]):
+            exclude (Optional[list[str]]):
                 Defines properties which should not be included in the payload. E.g.: ["ACTIVITY_INFO"]
 
         Returns:
@@ -374,8 +388,9 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
         """
         if exclude is None:
             exclude = []
-        return CatalogDeclarativeAnalytics.from_api(
-            self._layout_api.get_analytics_model(workspace_id=workspace_id, exclude=exclude)
+        return CatalogDeclarativeAnalytics.from_dict(
+            self._layout_api.get_analytics_model(workspace_id=workspace_id, exclude=exclude).to_dict(camel_case=False),
+            camel_case=False,
         )
 
     def put_declarative_analytics_model(self, workspace_id: str, analytics_model: CatalogDeclarativeAnalytics) -> None:
@@ -445,7 +460,7 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
         self.put_declarative_analytics_model(workspace_id, declarative_analytics_model)
 
     def store_analytics_model_to_disk(
-        self, workspace_id: str, path: Path = Path.cwd(), exclude: Optional[List[str]] = None
+        self, workspace_id: str, path: Path = Path.cwd(), exclude: Optional[list[str]] = None
     ) -> None:
         """Store analytics model for a given workspace in directory hierarchy.This method does not tie the declarative
             analytics model to the workspace and organization, thus it is recommended for migration between workspaces.
@@ -456,7 +471,7 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
                 Workspace identification string e.g. "demo"
             path (Path, optional):
                 Path to the root of the layout directory. Defaults to Path.cwd().
-            exclude (Optional[List[str]]):
+            exclude (Optional[list[str]]):
                 Defines properties which should not be included in the payload. E.g.: ["ACTIVITY_INFO"]
 
         Returns:
@@ -561,9 +576,16 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
         self,
         workspace_id: str,
         label_id: LabelElementsInputType,
-        depends_on: Optional[List[DependsOnItem]] = None,
-        validate_by: Optional[List[CatalogValidateByItem]] = None,
-    ) -> List[str]:
+        depends_on: Optional[list[DependsOnItem]] = None,
+        validate_by: Optional[list[CatalogValidateByItem]] = None,
+        exact_filter: Optional[list[str]] = None,
+        filter_by: Optional[CatalogFilterBy] = None,
+        pattern_filter: Optional[str] = None,
+        complement_filter: Optional[bool] = False,
+        sort_order: Optional[Literal["ASC", "DESC"]] = None,
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> list[str]:
         """
         Get existing values for a label.
         Under-the-hood, it basically executes SELECT DISTINCT <label_column_name> from corresponding table.
@@ -575,10 +597,26 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
             label_id (str):
                 Label ID. We support string or ObjId types.
                 String may not contain "label/" prefix, we append it if necessary.
-            depends_on (Optional[List[DependsOnItem]]):
+            depends_on (Optional[list[DependsOnItem]]):
                 Optional parameter specifying dependencies on other labels or date filters.
-            validate_by (Optional[List[CatalogValidateByItem]]):
+            validate_by (Optional[list[CatalogValidateByItem]]):
                 Optional parameter specifying validation metrics, attributes, labels or facts.
+            exact_filter (Optional[list[str]]):
+                Optional parameter specifying exact filter values.
+            filter_by (Optional[CatalogFilterBy]):
+                Optional parameter specifying which label is used for filtering - primary or requested.
+                If omitted the server will use the default value of "REQUESTED"
+            pattern_filter (Optional[str]):
+                Optional parameter specifying pattern filter: matching the elements using case-insensitive
+                substring match.
+            complement_filter (Optional[bool]):
+                Optional parameter specifying whether to negate the filter in exact_filter and pattern_filter.
+            sort_order (Optional[Literal["ASC", "DESC"]]):
+                Optional parameter specifying the sort order for the returned values.
+            offset (Optional[int]):
+                Optional parameter specifying the offset for the returned values.
+            limit (Optional[int]):
+                Optional parameter specifying the limit for the returned values.
         Returns:
             list of label values
         """
@@ -596,6 +634,30 @@ class CatalogWorkspaceContentService(CatalogServiceBase):
         request = ElementsRequest(
             label=label_id, depends_on=[d.to_api() for d in depends_on], validate_by=[v.to_api() for v in validate_by]
         )
+
+        if exact_filter is not None:
+            request.exact_filter = exact_filter
+
+        if filter_by is not None:
+            request.filter_by = filter_by.to_api()
+
+        if pattern_filter is not None:
+            request.pattern_filter = pattern_filter
+
+        if complement_filter:
+            request.complement_filter = complement_filter
+
+        if sort_order is not None:
+            request.sort_order = sort_order
+
+        paging_params = {}
+        if offset is not None:
+            paging_params["offset"] = offset
+        if limit is not None:
+            paging_params["limit"] = limit
+
         # TODO - fix return type of Paging.next in Backend + add support for this API to SDK
-        values = self._actions_api.compute_label_elements_post(workspace_id, request, _check_return_type=False)
+        values = self._actions_api.compute_label_elements_post(
+            workspace_id, request, _check_return_type=False, **paging_params
+        )
         return [v["title"] for v in values["elements"]]

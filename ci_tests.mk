@@ -1,5 +1,5 @@
 # (C) 2021 GoodData Corporation
-IN_TEST_ENVS = py311,py310,py39,py38
+IN_TEST_ENVS = py313,py312,py311,py310,py39
 ifdef TEST_ENVS
 	IN_TEST_ENVS = $(TEST_ENVS)
 endif
@@ -35,22 +35,25 @@ endif
 
 
 # Targets to build docker file for each python version
-.PHONY: test-ci-py38-build
-test-ci-py38-build: Dockerfile
-	docker build --build-arg "PY_TAG=3.8.12-slim-bullseye" --build-arg "ENV_TAG=py38" -t python-sdk:py38 .
-
 .PHONY: test-ci-py39-build
 test-ci-py39-build: Dockerfile
-	docker build --build-arg "PY_TAG=3.9.9-slim-bullseye" --build-arg "ENV_TAG=py39" -t python-sdk:py39 .
+	docker build --build-arg "PY_TAG=3.9.20-slim-bookworm" --build-arg "ENV_TAG=py39" -t python-sdk:py39 .
 
 .PHONY: test-ci-py310-build
 test-ci-py310-build: Dockerfile
-	docker build --build-arg "PY_TAG=3.10.4-slim-bullseye" --build-arg "ENV_TAG=py310" -t python-sdk:py310 .
+	docker build --build-arg "PY_TAG=3.10.15-slim-bookworm" --build-arg "ENV_TAG=py310" -t python-sdk:py310 .
 
 .PHONY: test-ci-py311-build
 test-ci-py311-build: Dockerfile
-	docker build --build-arg "PY_TAG=3.11.0-slim-bullseye" --build-arg "ENV_TAG=py311" -t python-sdk:py311 .
+	docker build --build-arg "PY_TAG=3.11.10-slim-bookworm" --build-arg "ENV_TAG=py311" -t python-sdk:py311 .
 
+.PHONY: test-ci-py312-build
+test-ci-py312-build: Dockerfile
+	docker build --build-arg "PY_TAG=3.12.6-slim-bookworm" --build-arg "ENV_TAG=py312" -t python-sdk:py312 .
+
+.PHONY: test-ci-py313-build
+test-ci-py313-build: Dockerfile
+	docker build --build-arg "PY_TAG=3.13.1-slim-bookworm" --build-arg "ENV_TAG=py313" -t python-sdk:py313 .
 
 # test-ci target triggers unit tests for each requested environment
 .PHONY: test-ci

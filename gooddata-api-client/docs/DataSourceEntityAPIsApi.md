@@ -45,11 +45,9 @@ with gooddata_api_client.ApiClient() as api_client:
     json_api_data_source_in_document = JsonApiDataSourceInDocument(
         data=JsonApiDataSourceIn(
             attributes=JsonApiDataSourceInAttributes(
-                cache_path=[
-                    "cache_path_example",
-                ],
                 cache_strategy="ALWAYS",
-                enable_caching=False,
+                client_id="client_id_example",
+                client_secret="client_secret_example",
                 name="name_example",
                 parameters=[
                     JsonApiDataSourceInAttributesParametersInner(
@@ -58,6 +56,8 @@ with gooddata_api_client.ApiClient() as api_client:
                     ),
                 ],
                 password="password_example",
+                private_key="private_key_example",
+                private_key_passphrase="private_key_passphrase_example",
                 schema="schema_example",
                 token="token_example",
                 type="POSTGRESQL",
@@ -547,11 +547,9 @@ with gooddata_api_client.ApiClient() as api_client:
     json_api_data_source_patch_document = JsonApiDataSourcePatchDocument(
         data=JsonApiDataSourcePatch(
             attributes=JsonApiDataSourcePatchAttributes(
-                cache_path=[
-                    "cache_path_example",
-                ],
                 cache_strategy="ALWAYS",
-                enable_caching=False,
+                client_id="client_id_example",
+                client_secret="client_secret_example",
                 name="name_example",
                 parameters=[
                     JsonApiDataSourceInAttributesParametersInner(
@@ -560,6 +558,8 @@ with gooddata_api_client.ApiClient() as api_client:
                     ),
                 ],
                 password="password_example",
+                private_key="private_key_example",
+                private_key_passphrase="private_key_passphrase_example",
                 schema="schema_example",
                 token="token_example",
                 type="POSTGRESQL",
@@ -653,11 +653,9 @@ with gooddata_api_client.ApiClient() as api_client:
     json_api_data_source_in_document = JsonApiDataSourceInDocument(
         data=JsonApiDataSourceIn(
             attributes=JsonApiDataSourceInAttributes(
-                cache_path=[
-                    "cache_path_example",
-                ],
                 cache_strategy="ALWAYS",
-                enable_caching=False,
+                client_id="client_id_example",
+                client_secret="client_secret_example",
                 name="name_example",
                 parameters=[
                     JsonApiDataSourceInAttributesParametersInner(
@@ -666,6 +664,8 @@ with gooddata_api_client.ApiClient() as api_client:
                     ),
                 ],
                 password="password_example",
+                private_key="private_key_example",
+                private_key_passphrase="private_key_passphrase_example",
                 schema="schema_example",
                 token="token_example",
                 type="POSTGRESQL",
