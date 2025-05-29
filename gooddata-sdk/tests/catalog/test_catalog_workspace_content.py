@@ -10,6 +10,8 @@ import attrs
 from gooddata_sdk import (
     CatalogDatasetWorkspaceDataFilterIdentifier,
     CatalogDeclarativeAnalytics,
+    CatalogDeclarativeExportDefinition,
+    CatalogDeclarativeExportDefinitionRequestPayload,
     CatalogDeclarativeModel,
     CatalogDeclarativeWorkspaceDataFilterReferences,
     CatalogDependentEntitiesRequest,
@@ -407,6 +409,28 @@ def test_label_elements(test_config):
         test_config["workspace"], "order_status", [depends_on_date_relative], []
     )
     assert label_values == []
+    exact_filter = None
+    filter_by = None
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "order_status", [depends_on], [], exact_filter, filter_by
+    )
+    assert label_values == ["Canceled", "Delivered"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", pattern_filter="Deli"
+    )
+    assert label_values == ["Delivered"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", pattern_filter="Deli", complement_filter=True
+    )
+    assert label_values == ["Canceled", "Returned"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", sort_order="DESC"
+    )
+    assert label_values == ["Returned", "Delivered", "Canceled"]
+    label_values = sdk.catalog_workspace_content.get_label_elements(
+        test_config["workspace"], "label/order_status", offset=1, limit=1
+    )
+    assert label_values == ["Delivered"]
 
 
 @gd_vcr.use_cassette(str(_fixtures_dir / "explicit_workspace_data_filter.yaml"))
@@ -440,5 +464,28 @@ def test_explicit_workspace_data_filter(test_config):
             dataset_id
         )
         assert len(dataset.workspace_data_filter_references) == 1
+    finally:
+        _refresh_workspaces(sdk)
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "export_definition_analytics_layout.yaml"))
+def test_export_definition_analytics_layout(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    try:
+        export_definition = CatalogDeclarativeExportDefinition(
+            id="export_definition_id",
+            title="export_definition_title",
+            request_payload=CatalogDeclarativeExportDefinitionRequestPayload(file_name="abc", format="CSV"),
+        )
+        export_definition.to_api()
+        analytics_o = sdk.catalog_workspace_content.get_declarative_analytics_model(
+            test_config["workspace"], exclude=["ACTIVITY_INFO"]
+        )
+        analytics_o.analytics.export_definitions = [export_definition]
+        sdk.catalog_workspace_content.put_declarative_analytics_model(test_config["workspace"], analytics_o)
+        analytics_e = sdk.catalog_workspace_content.get_declarative_analytics_model(
+            test_config["workspace"], exclude=["ACTIVITY_INFO"]
+        )
+        assert analytics_o.analytics.export_definitions == analytics_e.analytics.export_definitions
     finally:
         _refresh_workspaces(sdk)

@@ -101,17 +101,16 @@ with gooddata_api_client.ApiClient() as api_client:
     declarative_data_sources = DeclarativeDataSources(
         data_sources=[
             DeclarativeDataSource(
-                cache_path=[
-                    "[ "dfs", "data" ]. Example used in Apache Drill.",
-                ],
+                authentication_type="USERNAME_PASSWORD",
                 cache_strategy="ALWAYS",
+                client_id="client1234",
+                client_secret="client_secret_example",
                 decoded_parameters=[
                     Parameter(
                         name="name_example",
                         value="value_example",
                     ),
                 ],
-                enable_caching=False,
                 id="pg_local_docker-demo",
                 name="postgres demo",
                 parameters=[
@@ -130,6 +129,8 @@ with gooddata_api_client.ApiClient() as api_client:
                         name="MANAGE",
                     ),
                 ],
+                private_key="private_key_example",
+                private_key_passphrase="private_key_passphrase_example",
                 schema="demo",
                 token="Bigquery service account JSON. Encode it using base64!",
                 type="POSTGRESQL",

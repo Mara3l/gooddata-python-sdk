@@ -31,8 +31,8 @@ from gooddata_api_client.exceptions import ApiAttributeError
 
 
 def lazy_import():
-    from gooddata_api_client.model.measure_definition import MeasureDefinition
-    globals()['MeasureDefinition'] = MeasureDefinition
+    from gooddata_api_client.model.measure_item_definition import MeasureItemDefinition
+    globals()['MeasureItemDefinition'] = MeasureItemDefinition
 
 
 class MeasureItem(ModelNormal):
@@ -93,7 +93,7 @@ class MeasureItem(ModelNormal):
         """
         lazy_import()
         return {
-            'definition': (MeasureDefinition,),  # noqa: E501
+            'definition': (MeasureItemDefinition,),  # noqa: E501
             'local_identifier': (str,),  # noqa: E501
         }
 
@@ -118,8 +118,8 @@ class MeasureItem(ModelNormal):
         """MeasureItem - a model defined in OpenAPI
 
         Args:
-            definition (MeasureDefinition):
-            local_identifier (str):
+            definition (MeasureItemDefinition):
+            local_identifier (str): Local identifier of the metric. This can be used to reference the metric in other parts of the execution definition.
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -209,8 +209,8 @@ class MeasureItem(ModelNormal):
         """MeasureItem - a model defined in OpenAPI
 
         Args:
-            definition (MeasureDefinition):
-            local_identifier (str):
+            definition (MeasureItemDefinition):
+            local_identifier (str): Local identifier of the metric. This can be used to reference the metric in other parts of the execution definition.
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types

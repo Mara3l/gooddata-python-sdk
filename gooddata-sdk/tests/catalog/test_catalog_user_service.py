@@ -4,7 +4,6 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
-from typing import List
 
 from gooddata_sdk import (
     CatalogAssigneeIdentifier,
@@ -128,7 +127,7 @@ def test_list_user_groups(test_config):
         "adminQA1Group",
         "visitorsGroup",
     }
-    assert set(user_group.name for user_group in user_groups) == {"demo group", None, "visitors", None}
+    assert set(user_group.name for user_group in user_groups) == {"demo group", "visitors", None}
 
 
 @gd_vcr.use_cassette(str(_fixtures_dir / "get_user_group.yaml"))
@@ -147,7 +146,7 @@ def test_create_delete_user_group(test_config):
     try:
         current_user_groups = sdk.catalog_user.list_user_groups()
         assert len(current_user_groups) == 4
-        assert set(ug.name for ug in current_user_groups) == {"demo group", None, "visitors", None}
+        assert set(ug.name for ug in current_user_groups) == {"demo group", "visitors", None}
         user_group_e = CatalogUserGroup.init(
             user_group_id=user_group_id,
             user_group_name=user_group_id.upper(),
@@ -639,15 +638,41 @@ def test_revoke_permissions_bulk(test_config):
         sdk.catalog_user.manage_user_permissions(user_id, origin_permissions)
 
 
+@gd_vcr.use_cassette(str(_fixtures_dir / "test_api_tokens.yaml"))
+def test_api_tokens(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    tokens = sdk.catalog_user.list_user_api_tokens(test_config["demo_user"])
+    assert len(tokens) == 0
+
+    token_id = "test_token"
+    try:
+        token = sdk.catalog_user.create_user_api_token(test_config["demo_user"], "test_token")
+        assert token.id == token_id
+        assert token.bearer_token is not None
+
+        token = sdk.catalog_user.get_user_api_token(test_config["demo_user"], token_id)
+        assert token.id == token_id
+        assert token.bearer_token is None
+
+        tokens = sdk.catalog_user.list_user_api_tokens(test_config["demo_user"])
+        assert len(tokens) == 1
+        assert tokens[0].id == token_id
+        assert tokens[0].bearer_token is None
+    finally:
+        sdk.catalog_user.delete_user_api_token(test_config["demo_user"], token_id)
+        tokens = sdk.catalog_user.list_user_api_tokens(test_config["demo_user"])
+        assert len(tokens) == 0
+
+
 # Help functions
 
 
-def _assert_users_default(users: List[CatalogDeclarativeUser]):
+def _assert_users_default(users: list[CatalogDeclarativeUser]):
     assert len(users) == 3
     assert [user.id for user in users] == ["admin", "demo", "demo2"]
 
 
-def _assert_user_groups_default(user_groups: List[CatalogDeclarativeUserGroup]):
+def _assert_user_groups_default(user_groups: list[CatalogDeclarativeUserGroup]):
     assert len(user_groups) == 4
     assert set(user_group.id for user_group in user_groups) == {
         "adminGroup",
@@ -655,7 +680,7 @@ def _assert_user_groups_default(user_groups: List[CatalogDeclarativeUserGroup]):
         "adminQA1Group",
         "visitorsGroup",
     }
-    assert set(user_group.name for user_group in user_groups) == {"demo group", None, "visitors", None}
+    assert set(user_group.name for user_group in user_groups) == {"demo group", "visitors", None}
 
 
 def _assert_users_user_groups_default(users_user_groups: CatalogDeclarativeUsersUserGroups):

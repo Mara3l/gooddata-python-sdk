@@ -5,9 +5,14 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**get_analytics_model**](LayoutApi.md#get_analytics_model) | **GET** /api/v1/layout/workspaces/{workspaceId}/analyticsModel | Get analytics model
+[**get_automations**](LayoutApi.md#get_automations) | **GET** /api/v1/layout/workspaces/{workspaceId}/automations | Get automations
 [**get_data_source_permissions**](LayoutApi.md#get_data_source_permissions) | **GET** /api/v1/layout/dataSources/{dataSourceId}/permissions | Get permissions for the data source
 [**get_data_sources_layout**](LayoutApi.md#get_data_sources_layout) | **GET** /api/v1/layout/dataSources | Get all data sources
+[**get_export_templates_layout**](LayoutApi.md#get_export_templates_layout) | **GET** /api/v1/layout/exportTemplates | Get all export templates layout
+[**get_filter_views**](LayoutApi.md#get_filter_views) | **GET** /api/v1/layout/workspaces/{workspaceId}/filterViews | Get filter views
+[**get_identity_providers_layout**](LayoutApi.md#get_identity_providers_layout) | **GET** /api/v1/layout/identityProviders | Get all identity providers layout
 [**get_logical_model**](LayoutApi.md#get_logical_model) | **GET** /api/v1/layout/workspaces/{workspaceId}/logicalModel | Get logical model
+[**get_notification_channels_layout**](LayoutApi.md#get_notification_channels_layout) | **GET** /api/v1/layout/notificationChannels | Get all notification channels layout
 [**get_organization_layout**](LayoutApi.md#get_organization_layout) | **GET** /api/v1/layout/organization | Get organization layout
 [**get_organization_permissions**](LayoutApi.md#get_organization_permissions) | **GET** /api/v1/layout/organization/permissions | Get organization permissions
 [**get_user_data_filters**](LayoutApi.md#get_user_data_filters) | **GET** /api/v1/layout/workspaces/{workspaceId}/userDataFilters | Get user data filters
@@ -26,8 +31,13 @@ Method | HTTP request | Description
 [**put_users_user_groups_layout**](LayoutApi.md#put_users_user_groups_layout) | **PUT** /api/v1/layout/usersAndUserGroups | Put all users and user groups
 [**put_workspace_layout**](LayoutApi.md#put_workspace_layout) | **PUT** /api/v1/layout/workspaces/{workspaceId} | Set workspace layout
 [**set_analytics_model**](LayoutApi.md#set_analytics_model) | **PUT** /api/v1/layout/workspaces/{workspaceId}/analyticsModel | Set analytics model
+[**set_automations**](LayoutApi.md#set_automations) | **PUT** /api/v1/layout/workspaces/{workspaceId}/automations | Set automations
 [**set_data_source_permissions**](LayoutApi.md#set_data_source_permissions) | **PUT** /api/v1/layout/dataSources/{dataSourceId}/permissions | Set data source permissions.
+[**set_export_templates**](LayoutApi.md#set_export_templates) | **PUT** /api/v1/layout/exportTemplates | Set all export templates
+[**set_filter_views**](LayoutApi.md#set_filter_views) | **PUT** /api/v1/layout/workspaces/{workspaceId}/filterViews | Set filter views
+[**set_identity_providers**](LayoutApi.md#set_identity_providers) | **PUT** /api/v1/layout/identityProviders | Set all identity providers
 [**set_logical_model**](LayoutApi.md#set_logical_model) | **PUT** /api/v1/layout/workspaces/{workspaceId}/logicalModel | Set logical model
+[**set_notification_channels**](LayoutApi.md#set_notification_channels) | **PUT** /api/v1/layout/notificationChannels | Set all notification channels
 [**set_organization_layout**](LayoutApi.md#set_organization_layout) | **PUT** /api/v1/layout/organization | Set organization layout
 [**set_organization_permissions**](LayoutApi.md#set_organization_permissions) | **PUT** /api/v1/layout/organization/permissions | Set organization permissions
 [**set_user_data_filters**](LayoutApi.md#set_user_data_filters) | **PUT** /api/v1/layout/workspaces/{workspaceId}/userDataFilters | Set user data filters
@@ -115,6 +125,86 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Retrieved current analytics model. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_automations**
+> [DeclarativeAutomation] get_automations(workspace_id)
+
+Get automations
+
+Retrieve automations for the specific workspace
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_automation import DeclarativeAutomation
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+    exclude = [
+        "ACTIVITY_INFO",
+    ] # [str] |  (optional)
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Get automations
+        api_response = api_instance.get_automations(workspace_id)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->get_automations: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # Get automations
+        api_response = api_instance.get_automations(workspace_id, exclude=exclude)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->get_automations: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+ **exclude** | **[str]**|  | [optional]
+
+### Return type
+
+[**[DeclarativeAutomation]**](DeclarativeAutomation.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Retrieved automations. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -248,6 +338,212 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **get_export_templates_layout**
+> DeclarativeExportTemplates get_export_templates_layout()
+
+Get all export templates layout
+
+Gets complete layout of export templates.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_export_templates import DeclarativeExportTemplates
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+
+    # example, this endpoint has no required or optional parameters
+    try:
+        # Get all export templates layout
+        api_response = api_instance.get_export_templates_layout()
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->get_export_templates_layout: %s\n" % e)
+```
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**DeclarativeExportTemplates**](DeclarativeExportTemplates.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Retrieved layout of all export templates. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_filter_views**
+> [DeclarativeFilterView] get_filter_views(workspace_id)
+
+Get filter views
+
+Retrieve filter views for the specific workspace
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_filter_view import DeclarativeFilterView
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+    exclude = [
+        "ACTIVITY_INFO",
+    ] # [str] |  (optional)
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Get filter views
+        api_response = api_instance.get_filter_views(workspace_id)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->get_filter_views: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # Get filter views
+        api_response = api_instance.get_filter_views(workspace_id, exclude=exclude)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->get_filter_views: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+ **exclude** | **[str]**|  | [optional]
+
+### Return type
+
+[**[DeclarativeFilterView]**](DeclarativeFilterView.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Retrieved filterViews. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_identity_providers_layout**
+> [DeclarativeIdentityProvider] get_identity_providers_layout()
+
+Get all identity providers layout
+
+Gets complete layout of identity providers.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_identity_provider import DeclarativeIdentityProvider
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+
+    # example, this endpoint has no required or optional parameters
+    try:
+        # Get all identity providers layout
+        api_response = api_instance.get_identity_providers_layout()
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->get_identity_providers_layout: %s\n" % e)
+```
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**[DeclarativeIdentityProvider]**](DeclarativeIdentityProvider.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Retrieved layout of all identity providers. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **get_logical_model**
 > DeclarativeModel get_logical_model(workspace_id)
 
@@ -323,6 +619,69 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Retrieved current logical model. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_notification_channels_layout**
+> DeclarativeNotificationChannels get_notification_channels_layout()
+
+Get all notification channels layout
+
+Gets complete layout of notification channels.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_notification_channels import DeclarativeNotificationChannels
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+
+    # example, this endpoint has no required or optional parameters
+    try:
+        # Get all notification channels layout
+        api_response = api_instance.get_notification_channels_layout()
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->get_notification_channels_layout: %s\n" % e)
+```
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**DeclarativeNotificationChannels**](DeclarativeNotificationChannels.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Retrieved layout of all notification channels. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1159,17 +1518,16 @@ with gooddata_api_client.ApiClient() as api_client:
     declarative_data_sources = DeclarativeDataSources(
         data_sources=[
             DeclarativeDataSource(
-                cache_path=[
-                    "[ "dfs", "data" ]. Example used in Apache Drill.",
-                ],
+                authentication_type="USERNAME_PASSWORD",
                 cache_strategy="ALWAYS",
+                client_id="client1234",
+                client_secret="client_secret_example",
                 decoded_parameters=[
                     Parameter(
                         name="name_example",
                         value="value_example",
                     ),
                 ],
-                enable_caching=False,
                 id="pg_local_docker-demo",
                 name="postgres demo",
                 parameters=[
@@ -1188,6 +1546,8 @@ with gooddata_api_client.ApiClient() as api_client:
                         name="MANAGE",
                     ),
                 ],
+                private_key="private_key_example",
+                private_key_passphrase="private_key_passphrase_example",
                 schema="demo",
                 token="Bigquery service account JSON. Encode it using base64!",
                 type="POSTGRESQL",
@@ -1368,7 +1728,7 @@ with gooddata_api_client.ApiClient() as api_client:
                 ],
                 settings=[
                     DeclarativeSetting(
-                        content={},
+                        content=JsonNode(),
                         id="/6bUUGjjNSwg0_bs",
                         type="TIMEZONE",
                     ),
@@ -1487,7 +1847,7 @@ with gooddata_api_client.ApiClient() as api_client:
                 ],
                 settings=[
                     DeclarativeSetting(
-                        content={},
+                        content=JsonNode(),
                         id="/6bUUGjjNSwg0_bs",
                         type="TIMEZONE",
                     ),
@@ -1579,7 +1939,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             analytical_dashboards=[
                 DeclarativeAnalyticalDashboard(
-                    content={},
+                    content=JsonNode(),
                     created_at="2023-07-20 12:30",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1601,7 +1961,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             attribute_hierarchies=[
                 DeclarativeAttributeHierarchy(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1620,7 +1980,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             dashboard_plugins=[
                 DeclarativeDashboardPlugin(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1637,9 +1997,28 @@ with gooddata_api_client.ApiClient() as api_client:
                     title="3D map renderer",
                 ),
             ],
+            export_definitions=[
+                DeclarativeExportDefinition(
+                    created_at="["2023-07-20 12:30"]",
+                    created_by=DeclarativeUserIdentifier(
+                        id="employee123",
+                        type="user",
+                    ),
+                    description="Simple number for total goods in current production.",
+                    id="export-definition-1",
+                    modified_at="["2023-07-20 12:30"]",
+                    modified_by=DeclarativeUserIdentifier(
+                        id="employee123",
+                        type="user",
+                    ),
+                    request_payload=DeclarativeExportDefinitionRequestPayload(None),
+                    tags=["Revenues"],
+                    title="My regular export",
+                ),
+            ],
             filter_contexts=[
                 DeclarativeFilterContext(
-                    content={},
+                    content=JsonNode(),
                     description="Filter Context for Sales team.",
                     id="filter-sales",
                     tags=["Revenues"],
@@ -1648,7 +2027,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             metrics=[
                 DeclarativeMetric(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1667,7 +2046,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             visualization_objects=[
                 DeclarativeVisualizationObject(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1897,7 +2276,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             analytical_dashboards=[
                 DeclarativeAnalyticalDashboard(
-                    content={},
+                    content=JsonNode(),
                     created_at="2023-07-20 12:30",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1919,7 +2298,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             attribute_hierarchies=[
                 DeclarativeAttributeHierarchy(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1938,7 +2317,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             dashboard_plugins=[
                 DeclarativeDashboardPlugin(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1955,9 +2334,28 @@ with gooddata_api_client.ApiClient() as api_client:
                     title="3D map renderer",
                 ),
             ],
+            export_definitions=[
+                DeclarativeExportDefinition(
+                    created_at="["2023-07-20 12:30"]",
+                    created_by=DeclarativeUserIdentifier(
+                        id="employee123",
+                        type="user",
+                    ),
+                    description="Simple number for total goods in current production.",
+                    id="export-definition-1",
+                    modified_at="["2023-07-20 12:30"]",
+                    modified_by=DeclarativeUserIdentifier(
+                        id="employee123",
+                        type="user",
+                    ),
+                    request_payload=DeclarativeExportDefinitionRequestPayload(None),
+                    tags=["Revenues"],
+                    title="My regular export",
+                ),
+            ],
             filter_contexts=[
                 DeclarativeFilterContext(
-                    content={},
+                    content=JsonNode(),
                     description="Filter Context for Sales team.",
                     id="filter-sales",
                     tags=["Revenues"],
@@ -1966,7 +2364,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             metrics=[
                 DeclarativeMetric(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -1985,7 +2383,7 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             visualization_objects=[
                 DeclarativeVisualizationObject(
-                    content={},
+                    content=JsonNode(),
                     created_at="["2023-07-20 12:30"]",
                     created_by=DeclarativeUserIdentifier(
                         id="employee123",
@@ -2043,12 +2441,244 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **set_automations**
+> set_automations(workspace_id, declarative_automation)
+
+Set automations
+
+Set automations for the specific workspace.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_automation import DeclarativeAutomation
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+    declarative_automation = [
+        DeclarativeAutomation(
+            alert=AutomationAlert(
+                condition=AutomationAlertCondition(None),
+                execution=AlertAfm(
+                    attributes=[
+                        AttributeItem(
+                            label=AfmObjectIdentifierLabel(
+                                identifier=AfmObjectIdentifierLabelIdentifier(
+                                    id="sample_item.price",
+                                    type="label",
+                                ),
+                            ),
+                            local_identifier="attribute_1",
+                            show_all_values=False,
+                        ),
+                    ],
+                    aux_measures=[
+                        MeasureItem(
+                            definition=MeasureDefinition(),
+                            local_identifier="metric_1",
+                        ),
+                    ],
+                    filters=[
+                        FilterDefinition(),
+                    ],
+                    measures=[
+                        MeasureItem(
+                            definition=MeasureDefinition(),
+                            local_identifier="metric_1",
+                        ),
+                    ],
+                ),
+                trigger="ALWAYS",
+            ),
+            analytical_dashboard=DeclarativeAnalyticalDashboardIdentifier(
+                id="dashboard123",
+                type="analyticalDashboard",
+            ),
+            created_at="2023-07-20 12:30",
+            created_by=DeclarativeUserIdentifier(
+                id="employee123",
+                type="user",
+            ),
+            description="description_example",
+            details={
+                "key": "key_example",
+            },
+            export_definitions=[
+                DeclarativeExportDefinitionIdentifier(
+                    id="export123",
+                    type="exportDefinition",
+                ),
+            ],
+            external_recipients=[
+                AutomationExternalRecipient(
+                    email="email_example",
+                ),
+            ],
+            id="/6bUUGjjNSwg0_bs",
+            image_exports=[
+                AutomationImageExport(
+                    request_payload=ImageExportRequest(
+                        dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                        file_name="filename",
+                        format="PNG",
+                        metadata=JsonNode(),
+                        widget_ids=[
+                            "widget_ids_example",
+                        ],
+                    ),
+                ),
+            ],
+            metadata=AutomationMetadata(
+                visible_filters=[
+                    VisibleFilter(
+                        is_all_time_date_filter=False,
+                        local_identifier="local_identifier_example",
+                        title="title_example",
+                    ),
+                ],
+                widget="widget_example",
+            ),
+            modified_at="2023-07-20 12:30",
+            modified_by=DeclarativeUserIdentifier(
+                id="employee123",
+                type="user",
+            ),
+            notification_channel=DeclarativeNotificationChannelIdentifier(
+                id="webhook123",
+                type="notificationChannel",
+            ),
+            recipients=[
+                DeclarativeUserIdentifier(
+                    id="employee123",
+                    type="user",
+                ),
+            ],
+            schedule=AutomationSchedule(
+                cron="0 */30 9-17 ? * MON-FRI",
+                first_run=dateutil_parser('2025-01-01T12:00:00Z'),
+                timezone="Europe/Prague",
+            ),
+            state="ACTIVE",
+            tabular_exports=[
+                AutomationTabularExport(
+                    request_payload=TabularExportRequest(
+                        custom_override=CustomOverride(
+                            labels={
+                                "key": CustomLabel(
+                                    title="title_example",
+                                ),
+                            },
+                            metrics={
+                                "key": CustomMetric(
+                                    format="format_example",
+                                    title="title_example",
+                                ),
+                            },
+                        ),
+                        execution_result="ff483727196c9dc862c7fd3a5a84df55c96d61a4",
+                        file_name="result",
+                        format="CSV",
+                        metadata=JsonNode(),
+                        related_dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                        settings=Settings(
+                            merge_headers=True,
+                            pdf_page_size="a4 landscape",
+                            pdf_table_style=[
+                                PdfTableStyle(
+                                    properties=[
+                                        PdfTableStyleProperty(
+                                            key="key_example",
+                                            value="value_example",
+                                        ),
+                                    ],
+                                    selector="selector_example",
+                                ),
+                            ],
+                            pdf_top_left_content="Good",
+                            pdf_top_right_content="Morning",
+                            show_filters=False,
+                        ),
+                        visualization_object="f7c359bc-c230-4487-b15b-ad9685bcb537",
+                        visualization_object_custom_filters=[
+                            {},
+                        ],
+                    ),
+                ),
+            ],
+            tags=[
+                "["Revenue","Sales"]",
+            ],
+            title="title_example",
+            visual_exports=[
+                AutomationVisualExport(
+                    request_payload=VisualExportRequest(
+                        dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                        file_name="filename",
+                        metadata={},
+                    ),
+                ),
+            ],
+        ),
+    ] # [DeclarativeAutomation] | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Set automations
+        api_instance.set_automations(workspace_id, declarative_automation)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->set_automations: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+ **declarative_automation** | [**[DeclarativeAutomation]**](DeclarativeAutomation.md)|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Automations successfully set. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **set_data_source_permissions**
 > set_data_source_permissions(data_source_id, declarative_data_source_permissions)
 
 Set data source permissions.
 
-et data source permissions.
+set data source permissions.
 
 ### Example
 
@@ -2118,6 +2748,311 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **set_export_templates**
+> set_export_templates(declarative_export_templates)
+
+Set all export templates
+
+Sets export templates in organization.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_export_templates import DeclarativeExportTemplates
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+    declarative_export_templates = DeclarativeExportTemplates(
+        export_templates=[
+            DeclarativeExportTemplate(
+                dashboard_slides_template=DashboardSlidesTemplate(
+                    applied_on=["PDF","PPTX"],
+                    content_slide=ContentSlideTemplate(
+                        description_field="{{dashboardFilters}}",
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                    cover_slide=CoverSlideTemplate(
+                        background_image=True,
+                        description_field="Exported at: {{exportedAt}}",
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                    intro_slide=IntroSlideTemplate(
+                        background_image=True,
+                        description_field='''About:
+{{dashboardDescription}}
+
+{{dashboardFilters}}''',
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        title_field="Introduction",
+                    ),
+                    section_slide=SectionSlideTemplate(
+                        background_image=True,
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                ),
+                id="default-export-template",
+                name="My default export template",
+                widget_slides_template=WidgetSlidesTemplate(
+                    applied_on=["PDF","PPTX"],
+                    content_slide=ContentSlideTemplate(
+                        description_field="{{dashboardFilters}}",
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                ),
+            ),
+        ],
+    ) # DeclarativeExportTemplates | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Set all export templates
+        api_instance.set_export_templates(declarative_export_templates)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->set_export_templates: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **declarative_export_templates** | [**DeclarativeExportTemplates**](DeclarativeExportTemplates.md)|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | All export templates set. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **set_filter_views**
+> set_filter_views(workspace_id, declarative_filter_view)
+
+Set filter views
+
+Set filter views for the specific workspace.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_filter_view import DeclarativeFilterView
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+    workspace_id = "workspaceId_example" # str | 
+    declarative_filter_view = [
+        DeclarativeFilterView(
+            analytical_dashboard=DeclarativeAnalyticalDashboardIdentifier(
+                id="dashboard123",
+                type="analyticalDashboard",
+            ),
+            content=JsonNode(),
+            description="description_example",
+            id="filterView-1",
+            is_default=True,
+            tags=[
+                "["Revenue","Sales"]",
+            ],
+            title="title_example",
+            user=DeclarativeUserIdentifier(
+                id="employee123",
+                type="user",
+            ),
+        ),
+    ] # [DeclarativeFilterView] | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Set filter views
+        api_instance.set_filter_views(workspace_id, declarative_filter_view)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->set_filter_views: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**|  |
+ **declarative_filter_view** | [**[DeclarativeFilterView]**](DeclarativeFilterView.md)|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | FilterViews successfully set. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **set_identity_providers**
+> set_identity_providers(declarative_identity_provider)
+
+Set all identity providers
+
+Sets identity providers in organization.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_identity_provider import DeclarativeIdentityProvider
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+    declarative_identity_provider = [
+        DeclarativeIdentityProvider(
+            custom_claim_mapping={
+                "key": "key_example",
+            },
+            id="filterView-1",
+            identifiers=["gooddata.com"],
+            oauth_client_id="oauth_client_id_example",
+            oauth_client_secret="oauth_client_secret_example",
+            oauth_issuer_location="oauth_issuer_location_example",
+            saml_metadata="saml_metadata_example",
+        ),
+    ] # [DeclarativeIdentityProvider] | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Set all identity providers
+        api_instance.set_identity_providers(declarative_identity_provider)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->set_identity_providers: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **declarative_identity_provider** | [**[DeclarativeIdentityProvider]**](DeclarativeIdentityProvider.md)|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | All identity providers set. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2322,6 +3257,85 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **set_notification_channels**
+> set_notification_channels(declarative_notification_channels)
+
+Set all notification channels
+
+Sets notification channels in organization.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import layout_api
+from gooddata_api_client.model.declarative_notification_channels import DeclarativeNotificationChannels
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = layout_api.LayoutApi(api_client)
+    declarative_notification_channels = DeclarativeNotificationChannels(
+        notification_channels=[
+            DeclarativeNotificationChannel(
+                allowed_recipients="INTERNAL",
+                custom_dashboard_url="custom_dashboard_url_example",
+                dashboard_link_visibility="INTERNAL_ONLY",
+                description="This is a channel",
+                destination=DeclarativeNotificationChannelDestination(None),
+                id="notification-channel-1",
+                in_platform_notification="DISABLED",
+                name="channel",
+            ),
+        ],
+    ) # DeclarativeNotificationChannels | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Set all notification channels
+        api_instance.set_notification_channels(declarative_notification_channels)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling LayoutApi->set_notification_channels: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **declarative_notification_channels** | [**DeclarativeNotificationChannels**](DeclarativeNotificationChannels.md)|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | All notification channels set. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **set_organization_layout**
 > set_organization_layout(declarative_organization)
 
@@ -2352,17 +3366,16 @@ with gooddata_api_client.ApiClient() as api_client:
     declarative_organization = DeclarativeOrganization(
         data_sources=[
             DeclarativeDataSource(
-                cache_path=[
-                    "[ "dfs", "data" ]. Example used in Apache Drill.",
-                ],
+                authentication_type="USERNAME_PASSWORD",
                 cache_strategy="ALWAYS",
+                client_id="client1234",
+                client_secret="client_secret_example",
                 decoded_parameters=[
                     Parameter(
                         name="name_example",
                         value="value_example",
                     ),
                 ],
-                enable_caching=False,
                 id="pg_local_docker-demo",
                 name="postgres demo",
                 parameters=[
@@ -2381,11 +3394,99 @@ with gooddata_api_client.ApiClient() as api_client:
                         name="MANAGE",
                     ),
                 ],
+                private_key="private_key_example",
+                private_key_passphrase="private_key_passphrase_example",
                 schema="demo",
                 token="Bigquery service account JSON. Encode it using base64!",
                 type="POSTGRESQL",
                 url="jdbc:postgresql://postgres:5432/gooddata",
                 username="demo",
+            ),
+        ],
+        export_templates=[
+            DeclarativeExportTemplate(
+                dashboard_slides_template=DashboardSlidesTemplate(
+                    applied_on=["PDF","PPTX"],
+                    content_slide=ContentSlideTemplate(
+                        description_field="{{dashboardFilters}}",
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                    cover_slide=CoverSlideTemplate(
+                        background_image=True,
+                        description_field="Exported at: {{exportedAt}}",
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                    intro_slide=IntroSlideTemplate(
+                        background_image=True,
+                        description_field='''About:
+{{dashboardDescription}}
+
+{{dashboardFilters}}''',
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        title_field="Introduction",
+                    ),
+                    section_slide=SectionSlideTemplate(
+                        background_image=True,
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                ),
+                id="default-export-template",
+                name="My default export template",
+                widget_slides_template=WidgetSlidesTemplate(
+                    applied_on=["PDF","PPTX"],
+                    content_slide=ContentSlideTemplate(
+                        description_field="{{dashboardFilters}}",
+                        footer=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                        header=RunningSection(
+                            left="left_example",
+                            right="right_example",
+                        ),
+                    ),
+                ),
+            ),
+        ],
+        identity_providers=[
+            DeclarativeIdentityProvider(
+                custom_claim_mapping={
+                    "key": "key_example",
+                },
+                id="filterView-1",
+                identifiers=["gooddata.com"],
+                oauth_client_id="oauth_client_id_example",
+                oauth_client_secret="oauth_client_secret_example",
+                oauth_issuer_location="oauth_issuer_location_example",
+                saml_metadata="saml_metadata_example",
             ),
         ],
         jwks=[
@@ -2394,10 +3495,25 @@ with gooddata_api_client.ApiClient() as api_client:
                 id="jwk-1",
             ),
         ],
+        notification_channels=[
+            DeclarativeNotificationChannel(
+                allowed_recipients="INTERNAL",
+                custom_dashboard_url="custom_dashboard_url_example",
+                dashboard_link_visibility="INTERNAL_ONLY",
+                description="This is a channel",
+                destination=DeclarativeNotificationChannelDestination(None),
+                id="notification-channel-1",
+                in_platform_notification="DISABLED",
+                name="channel",
+            ),
+        ],
         organization=DeclarativeOrganizationInfo(
+            allowed_origins=[
+                "allowed_origins_example",
+            ],
             color_palettes=[
                 DeclarativeColorPalette(
-                    content={},
+                    content=JsonNode(),
                     id="id_example",
                     name="name_example",
                 ),
@@ -2411,11 +3527,20 @@ with gooddata_api_client.ApiClient() as api_client:
                 ),
             ],
             early_access="early_access_example",
+            early_access_values=[
+                "early_access_values_example",
+            ],
             hostname="alpha.com",
             id="Alpha corporation",
             name="Alpha corporation",
             oauth_client_id="oauth_client_id_example",
             oauth_client_secret="oauth_client_secret_example",
+            oauth_custom_auth_attributes={
+                "key": "key_example",
+            },
+            oauth_custom_scopes=[
+                "oauth_custom_scopes_example",
+            ],
             oauth_issuer_id="myOidcProvider",
             oauth_issuer_location="oauth_issuer_location_example",
             oauth_subject_id_claim="oid",
@@ -2430,14 +3555,14 @@ with gooddata_api_client.ApiClient() as api_client:
             ],
             settings=[
                 DeclarativeSetting(
-                    content={},
+                    content=JsonNode(),
                     id="/6bUUGjjNSwg0_bs",
                     type="TIMEZONE",
                 ),
             ],
             themes=[
                 DeclarativeTheme(
-                    content={},
+                    content=JsonNode(),
                     id="id_example",
                     name="name_example",
                 ),
@@ -2482,7 +3607,7 @@ with gooddata_api_client.ApiClient() as api_client:
                 ],
                 settings=[
                     DeclarativeSetting(
-                        content={},
+                        content=JsonNode(),
                         id="/6bUUGjjNSwg0_bs",
                         type="TIMEZONE",
                     ),
@@ -2521,11 +3646,176 @@ with gooddata_api_client.ApiClient() as api_client:
         ],
         workspaces=[
             DeclarativeWorkspace(
+                automations=[
+                    DeclarativeAutomation(
+                        alert=AutomationAlert(
+                            condition=AutomationAlertCondition(None),
+                            execution=AlertAfm(
+                                attributes=[
+                                    AttributeItem(
+                                        label=AfmObjectIdentifierLabel(
+                                            identifier=AfmObjectIdentifierLabelIdentifier(
+                                                id="sample_item.price",
+                                                type="label",
+                                            ),
+                                        ),
+                                        local_identifier="attribute_1",
+                                        show_all_values=False,
+                                    ),
+                                ],
+                                aux_measures=[
+                                    MeasureItem(
+                                        definition=MeasureDefinition(),
+                                        local_identifier="metric_1",
+                                    ),
+                                ],
+                                filters=[
+                                    FilterDefinition(),
+                                ],
+                                measures=[
+                                    MeasureItem(
+                                        definition=MeasureDefinition(),
+                                        local_identifier="metric_1",
+                                    ),
+                                ],
+                            ),
+                            trigger="ALWAYS",
+                        ),
+                        analytical_dashboard=DeclarativeAnalyticalDashboardIdentifier(
+                            id="dashboard123",
+                            type="analyticalDashboard",
+                        ),
+                        created_at="2023-07-20 12:30",
+                        created_by=DeclarativeUserIdentifier(
+                            id="employee123",
+                            type="user",
+                        ),
+                        description="description_example",
+                        details={
+                            "key": "key_example",
+                        },
+                        export_definitions=[
+                            DeclarativeExportDefinitionIdentifier(
+                                id="export123",
+                                type="exportDefinition",
+                            ),
+                        ],
+                        external_recipients=[
+                            AutomationExternalRecipient(
+                                email="email_example",
+                            ),
+                        ],
+                        id="/6bUUGjjNSwg0_bs",
+                        image_exports=[
+                            AutomationImageExport(
+                                request_payload=ImageExportRequest(
+                                    dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                                    file_name="filename",
+                                    format="PNG",
+                                    metadata=JsonNode(),
+                                    widget_ids=[
+                                        "widget_ids_example",
+                                    ],
+                                ),
+                            ),
+                        ],
+                        metadata=AutomationMetadata(
+                            visible_filters=[
+                                VisibleFilter(
+                                    is_all_time_date_filter=False,
+                                    local_identifier="local_identifier_example",
+                                    title="title_example",
+                                ),
+                            ],
+                            widget="widget_example",
+                        ),
+                        modified_at="2023-07-20 12:30",
+                        modified_by=DeclarativeUserIdentifier(
+                            id="employee123",
+                            type="user",
+                        ),
+                        notification_channel=DeclarativeNotificationChannelIdentifier(
+                            id="webhook123",
+                            type="notificationChannel",
+                        ),
+                        recipients=[
+                            DeclarativeUserIdentifier(
+                                id="employee123",
+                                type="user",
+                            ),
+                        ],
+                        schedule=AutomationSchedule(
+                            cron="0 */30 9-17 ? * MON-FRI",
+                            first_run=dateutil_parser('2025-01-01T12:00:00Z'),
+                            timezone="Europe/Prague",
+                        ),
+                        state="ACTIVE",
+                        tabular_exports=[
+                            AutomationTabularExport(
+                                request_payload=TabularExportRequest(
+                                    custom_override=CustomOverride(
+                                        labels={
+                                            "key": CustomLabel(
+                                                title="title_example",
+                                            ),
+                                        },
+                                        metrics={
+                                            "key": CustomMetric(
+                                                format="format_example",
+                                                title="title_example",
+                                            ),
+                                        },
+                                    ),
+                                    execution_result="ff483727196c9dc862c7fd3a5a84df55c96d61a4",
+                                    file_name="result",
+                                    format="CSV",
+                                    metadata=JsonNode(),
+                                    related_dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                                    settings=Settings(
+                                        merge_headers=True,
+                                        pdf_page_size="a4 landscape",
+                                        pdf_table_style=[
+                                            PdfTableStyle(
+                                                properties=[
+                                                    PdfTableStyleProperty(
+                                                        key="key_example",
+                                                        value="value_example",
+                                                    ),
+                                                ],
+                                                selector="selector_example",
+                                            ),
+                                        ],
+                                        pdf_top_left_content="Good",
+                                        pdf_top_right_content="Morning",
+                                        show_filters=False,
+                                    ),
+                                    visualization_object="f7c359bc-c230-4487-b15b-ad9685bcb537",
+                                    visualization_object_custom_filters=[
+                                        {},
+                                    ],
+                                ),
+                            ),
+                        ],
+                        tags=[
+                            "["Revenue","Sales"]",
+                        ],
+                        title="title_example",
+                        visual_exports=[
+                            AutomationVisualExport(
+                                request_payload=VisualExportRequest(
+                                    dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                                    file_name="filename",
+                                    metadata={},
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
                 cache_extra_limit=1,
                 custom_application_settings=[
                     DeclarativeCustomApplicationSetting(
                         application_name="Modeler",
-                        content={},
+                        content=JsonNode(),
                         id="modeler.demo",
                     ),
                 ],
@@ -2537,6 +3827,29 @@ with gooddata_api_client.ApiClient() as api_client:
                 ),
                 description="description_example",
                 early_access="early_access_example",
+                early_access_values=[
+                    "early_access_values_example",
+                ],
+                filter_views=[
+                    DeclarativeFilterView(
+                        analytical_dashboard=DeclarativeAnalyticalDashboardIdentifier(
+                            id="dashboard123",
+                            type="analyticalDashboard",
+                        ),
+                        content=JsonNode(),
+                        description="description_example",
+                        id="filterView-1",
+                        is_default=True,
+                        tags=[
+                            "["Revenue","Sales"]",
+                        ],
+                        title="title_example",
+                        user=DeclarativeUserIdentifier(
+                            id="employee123",
+                            type="user",
+                        ),
+                    ),
+                ],
                 hierarchy_permissions=[
                     DeclarativeWorkspaceHierarchyPermission(
                         assignee=AssigneeIdentifier(
@@ -2559,7 +3872,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         analytical_dashboards=[
                             DeclarativeAnalyticalDashboard(
-                                content={},
+                                content=JsonNode(),
                                 created_at="2023-07-20 12:30",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -2581,7 +3894,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         attribute_hierarchies=[
                             DeclarativeAttributeHierarchy(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -2600,7 +3913,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         dashboard_plugins=[
                             DeclarativeDashboardPlugin(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -2617,9 +3930,28 @@ with gooddata_api_client.ApiClient() as api_client:
                                 title="3D map renderer",
                             ),
                         ],
+                        export_definitions=[
+                            DeclarativeExportDefinition(
+                                created_at="["2023-07-20 12:30"]",
+                                created_by=DeclarativeUserIdentifier(
+                                    id="employee123",
+                                    type="user",
+                                ),
+                                description="Simple number for total goods in current production.",
+                                id="export-definition-1",
+                                modified_at="["2023-07-20 12:30"]",
+                                modified_by=DeclarativeUserIdentifier(
+                                    id="employee123",
+                                    type="user",
+                                ),
+                                request_payload=DeclarativeExportDefinitionRequestPayload(None),
+                                tags=["Revenues"],
+                                title="My regular export",
+                            ),
+                        ],
                         filter_contexts=[
                             DeclarativeFilterContext(
-                                content={},
+                                content=JsonNode(),
                                 description="Filter Context for Sales team.",
                                 id="filter-sales",
                                 tags=["Revenues"],
@@ -2628,7 +3960,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         metrics=[
                             DeclarativeMetric(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -2647,7 +3979,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         visualization_objects=[
                             DeclarativeVisualizationObject(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -2815,7 +4147,7 @@ with gooddata_api_client.ApiClient() as api_client:
                 prefix="/6bUUGjjNSwg0_bs",
                 settings=[
                     DeclarativeSetting(
-                        content={},
+                        content=JsonNode(),
                         id="/6bUUGjjNSwg0_bs",
                         type="TIMEZONE",
                     ),
@@ -3426,11 +4758,176 @@ with gooddata_api_client.ApiClient() as api_client:
         ],
         workspaces=[
             DeclarativeWorkspace(
+                automations=[
+                    DeclarativeAutomation(
+                        alert=AutomationAlert(
+                            condition=AutomationAlertCondition(None),
+                            execution=AlertAfm(
+                                attributes=[
+                                    AttributeItem(
+                                        label=AfmObjectIdentifierLabel(
+                                            identifier=AfmObjectIdentifierLabelIdentifier(
+                                                id="sample_item.price",
+                                                type="label",
+                                            ),
+                                        ),
+                                        local_identifier="attribute_1",
+                                        show_all_values=False,
+                                    ),
+                                ],
+                                aux_measures=[
+                                    MeasureItem(
+                                        definition=MeasureDefinition(),
+                                        local_identifier="metric_1",
+                                    ),
+                                ],
+                                filters=[
+                                    FilterDefinition(),
+                                ],
+                                measures=[
+                                    MeasureItem(
+                                        definition=MeasureDefinition(),
+                                        local_identifier="metric_1",
+                                    ),
+                                ],
+                            ),
+                            trigger="ALWAYS",
+                        ),
+                        analytical_dashboard=DeclarativeAnalyticalDashboardIdentifier(
+                            id="dashboard123",
+                            type="analyticalDashboard",
+                        ),
+                        created_at="2023-07-20 12:30",
+                        created_by=DeclarativeUserIdentifier(
+                            id="employee123",
+                            type="user",
+                        ),
+                        description="description_example",
+                        details={
+                            "key": "key_example",
+                        },
+                        export_definitions=[
+                            DeclarativeExportDefinitionIdentifier(
+                                id="export123",
+                                type="exportDefinition",
+                            ),
+                        ],
+                        external_recipients=[
+                            AutomationExternalRecipient(
+                                email="email_example",
+                            ),
+                        ],
+                        id="/6bUUGjjNSwg0_bs",
+                        image_exports=[
+                            AutomationImageExport(
+                                request_payload=ImageExportRequest(
+                                    dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                                    file_name="filename",
+                                    format="PNG",
+                                    metadata=JsonNode(),
+                                    widget_ids=[
+                                        "widget_ids_example",
+                                    ],
+                                ),
+                            ),
+                        ],
+                        metadata=AutomationMetadata(
+                            visible_filters=[
+                                VisibleFilter(
+                                    is_all_time_date_filter=False,
+                                    local_identifier="local_identifier_example",
+                                    title="title_example",
+                                ),
+                            ],
+                            widget="widget_example",
+                        ),
+                        modified_at="2023-07-20 12:30",
+                        modified_by=DeclarativeUserIdentifier(
+                            id="employee123",
+                            type="user",
+                        ),
+                        notification_channel=DeclarativeNotificationChannelIdentifier(
+                            id="webhook123",
+                            type="notificationChannel",
+                        ),
+                        recipients=[
+                            DeclarativeUserIdentifier(
+                                id="employee123",
+                                type="user",
+                            ),
+                        ],
+                        schedule=AutomationSchedule(
+                            cron="0 */30 9-17 ? * MON-FRI",
+                            first_run=dateutil_parser('2025-01-01T12:00:00Z'),
+                            timezone="Europe/Prague",
+                        ),
+                        state="ACTIVE",
+                        tabular_exports=[
+                            AutomationTabularExport(
+                                request_payload=TabularExportRequest(
+                                    custom_override=CustomOverride(
+                                        labels={
+                                            "key": CustomLabel(
+                                                title="title_example",
+                                            ),
+                                        },
+                                        metrics={
+                                            "key": CustomMetric(
+                                                format="format_example",
+                                                title="title_example",
+                                            ),
+                                        },
+                                    ),
+                                    execution_result="ff483727196c9dc862c7fd3a5a84df55c96d61a4",
+                                    file_name="result",
+                                    format="CSV",
+                                    metadata=JsonNode(),
+                                    related_dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                                    settings=Settings(
+                                        merge_headers=True,
+                                        pdf_page_size="a4 landscape",
+                                        pdf_table_style=[
+                                            PdfTableStyle(
+                                                properties=[
+                                                    PdfTableStyleProperty(
+                                                        key="key_example",
+                                                        value="value_example",
+                                                    ),
+                                                ],
+                                                selector="selector_example",
+                                            ),
+                                        ],
+                                        pdf_top_left_content="Good",
+                                        pdf_top_right_content="Morning",
+                                        show_filters=False,
+                                    ),
+                                    visualization_object="f7c359bc-c230-4487-b15b-ad9685bcb537",
+                                    visualization_object_custom_filters=[
+                                        {},
+                                    ],
+                                ),
+                            ),
+                        ],
+                        tags=[
+                            "["Revenue","Sales"]",
+                        ],
+                        title="title_example",
+                        visual_exports=[
+                            AutomationVisualExport(
+                                request_payload=VisualExportRequest(
+                                    dashboard_id="761cd28b-3f57-4ac9-bbdc-1c552cc0d1d0",
+                                    file_name="filename",
+                                    metadata={},
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
                 cache_extra_limit=1,
                 custom_application_settings=[
                     DeclarativeCustomApplicationSetting(
                         application_name="Modeler",
-                        content={},
+                        content=JsonNode(),
                         id="modeler.demo",
                     ),
                 ],
@@ -3442,6 +4939,29 @@ with gooddata_api_client.ApiClient() as api_client:
                 ),
                 description="description_example",
                 early_access="early_access_example",
+                early_access_values=[
+                    "early_access_values_example",
+                ],
+                filter_views=[
+                    DeclarativeFilterView(
+                        analytical_dashboard=DeclarativeAnalyticalDashboardIdentifier(
+                            id="dashboard123",
+                            type="analyticalDashboard",
+                        ),
+                        content=JsonNode(),
+                        description="description_example",
+                        id="filterView-1",
+                        is_default=True,
+                        tags=[
+                            "["Revenue","Sales"]",
+                        ],
+                        title="title_example",
+                        user=DeclarativeUserIdentifier(
+                            id="employee123",
+                            type="user",
+                        ),
+                    ),
+                ],
                 hierarchy_permissions=[
                     DeclarativeWorkspaceHierarchyPermission(
                         assignee=AssigneeIdentifier(
@@ -3464,7 +4984,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         analytical_dashboards=[
                             DeclarativeAnalyticalDashboard(
-                                content={},
+                                content=JsonNode(),
                                 created_at="2023-07-20 12:30",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -3486,7 +5006,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         attribute_hierarchies=[
                             DeclarativeAttributeHierarchy(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -3505,7 +5025,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         dashboard_plugins=[
                             DeclarativeDashboardPlugin(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -3522,9 +5042,28 @@ with gooddata_api_client.ApiClient() as api_client:
                                 title="3D map renderer",
                             ),
                         ],
+                        export_definitions=[
+                            DeclarativeExportDefinition(
+                                created_at="["2023-07-20 12:30"]",
+                                created_by=DeclarativeUserIdentifier(
+                                    id="employee123",
+                                    type="user",
+                                ),
+                                description="Simple number for total goods in current production.",
+                                id="export-definition-1",
+                                modified_at="["2023-07-20 12:30"]",
+                                modified_by=DeclarativeUserIdentifier(
+                                    id="employee123",
+                                    type="user",
+                                ),
+                                request_payload=DeclarativeExportDefinitionRequestPayload(None),
+                                tags=["Revenues"],
+                                title="My regular export",
+                            ),
+                        ],
                         filter_contexts=[
                             DeclarativeFilterContext(
-                                content={},
+                                content=JsonNode(),
                                 description="Filter Context for Sales team.",
                                 id="filter-sales",
                                 tags=["Revenues"],
@@ -3533,7 +5072,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         metrics=[
                             DeclarativeMetric(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -3552,7 +5091,7 @@ with gooddata_api_client.ApiClient() as api_client:
                         ],
                         visualization_objects=[
                             DeclarativeVisualizationObject(
-                                content={},
+                                content=JsonNode(),
                                 created_at="["2023-07-20 12:30"]",
                                 created_by=DeclarativeUserIdentifier(
                                     id="employee123",
@@ -3720,7 +5259,7 @@ with gooddata_api_client.ApiClient() as api_client:
                 prefix="/6bUUGjjNSwg0_bs",
                 settings=[
                     DeclarativeSetting(
-                        content={},
+                        content=JsonNode(),
                         id="/6bUUGjjNSwg0_bs",
                         type="TIMEZONE",
                     ),

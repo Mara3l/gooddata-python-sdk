@@ -1,5 +1,5 @@
 # (C) 2022 GoodData Corporation
-from typing import List, Union
+from typing import Union
 
 from gooddata_sdk.catalog.catalog_service_base import CatalogServiceBase
 from gooddata_sdk.catalog.permission.declarative_model.dashboard_assignees import CatalogAvailableAssignees
@@ -18,7 +18,7 @@ from gooddata_sdk.client import GoodDataApiClient
 
 class CatalogPermissionService(CatalogServiceBase):
     def __init__(self, api_client: GoodDataApiClient) -> None:
-        super(CatalogPermissionService, self).__init__(api_client)
+        super().__init__(api_client)
 
     def get_declarative_permissions(self, workspace_id: str) -> CatalogDeclarativeWorkspacePermissions:
         """Retrieve current set of permissions of the workspace in a declarative form.
@@ -89,7 +89,7 @@ class CatalogPermissionService(CatalogServiceBase):
         self,
         workspace_id: str,
         dashboard_id: str,
-        permissions_for_assignee: List[
+        permissions_for_assignee: list[
             Union[CatalogPermissionsForAssigneeIdentifier, CatalogPermissionsForAssigneeRule]
         ],
     ) -> None:
@@ -113,43 +113,41 @@ class CatalogPermissionService(CatalogServiceBase):
             _check_return_type=False,
         )
 
-    def get_declarative_organization_permissions(self) -> List[CatalogDeclarativeOrganizationPermission]:
+    def get_declarative_organization_permissions(self) -> list[CatalogDeclarativeOrganizationPermission]:
         """Get a list of all declarative organization permissions.
 
         Args:
             None
 
         Returns:
-            [CatalogDeclarativeOrganizationPermission]:
+            list[CatalogDeclarativeOrganizationPermission]:
                 List of all declarative organization permissions.
         """
 
-        catalog_list = []
         organization_permissions = self._layout_api.get_organization_permissions()
-        for permission in organization_permissions:
-            catalog_list.append(CatalogDeclarativeOrganizationPermission.from_api(permission))
+        catalog_list = [
+            CatalogDeclarativeOrganizationPermission.from_api(permission) for permission in organization_permissions
+        ]
         return catalog_list
 
     def put_declarative_organization_permissions(
-        self, org_permissions: List[CatalogDeclarativeOrganizationPermission]
+        self, org_permissions: list[CatalogDeclarativeOrganizationPermission]
     ) -> None:
         """Put a list of all declarative organization permissions.
 
         Args:
-            org_permissions([CatalogDeclarativeOrganizationPermission])
-                list of declarative organization permissions
+            org_permissions (list[CatalogDeclarativeOrganizationPermission]):
+                List of declarative organization permissions.
 
         Returns:
             None
         """
 
-        declarative_organization_permissions = []
-        for catalog_permission in org_permissions:
-            declarative_organization_permissions.append(catalog_permission.to_api())
+        declarative_organization_permissions = [catalog_permission.to_api() for catalog_permission in org_permissions]
         self._layout_api.set_organization_permissions(declarative_organization_permissions)
 
     def manage_organization_permissions(
-        self, organization_permission_assignments: List[CatalogOrganizationPermissionAssignment]
+        self, organization_permission_assignments: list[CatalogOrganizationPermissionAssignment]
     ) -> None:
         """Provide managing organization permissions for user and user groups.
 

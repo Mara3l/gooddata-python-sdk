@@ -5,7 +5,6 @@ import functools
 from collections import defaultdict
 from enum import Enum
 from typing import Any, Optional, Union, cast
-from warnings import warn
 
 from gooddata_sdk.client import GoodDataApiClient
 from gooddata_sdk.compute.model.attribute import Attribute
@@ -30,7 +29,7 @@ from gooddata_sdk.compute.model.metric import (
     PopDatesetMetric,
     SimpleMetric,
 )
-from gooddata_sdk.utils import IdObjType, SideLoads, load_all_entities, safeget
+from gooddata_sdk.utils import IdObjType, SideLoads, load_all_entities, ref_extract, ref_extract_obj_id, safeget
 
 #
 # Conversion from types stored in visualization into the gooddata_afm_client models.
@@ -161,48 +160,29 @@ class AttributeSortType(Enum):
 #
 
 
-def _ref_extract_obj_id(ref: dict[str, Any]) -> ObjId:
-    if "identifier" in ref:
-        return ObjId(id=ref["identifier"]["id"], type=ref["identifier"]["type"])
-
-    raise ValueError("invalid ref. must be identifier")
-
-
-def _ref_extract(ref: dict[str, Any]) -> Union[str, ObjId]:
-    try:
-        return _ref_extract_obj_id(ref)
-    except ValueError:
-        pass
-
-    if "localIdentifier" in ref:
-        return ref["localIdentifier"]
-
-    raise ValueError("invalid ref. must be identifier or localIdentifier")
-
-
 def _convert_filter_to_computable(filter_obj: dict[str, Any]) -> Filter:
     if "positiveAttributeFilter" in filter_obj:
         f = filter_obj["positiveAttributeFilter"]
         # fallback to use URIs; SDK may be able to create filter with attr elements as uris...
         in_values = f["in"]["values"] if "values" in f["in"] else f["in"]["uris"]
 
-        return PositiveAttributeFilter(label=_ref_extract(f["displayForm"]), values=in_values)
+        return PositiveAttributeFilter(label=ref_extract(f["displayForm"]), values=in_values)
 
     elif "negativeAttributeFilter" in filter_obj:
         f = filter_obj["negativeAttributeFilter"]
         # fallback to use URIs; SDK may be able to create filter with attr elements as uris...
         not_in_values = f["notIn"]["values"] if "values" in f["notIn"] else f["notIn"]["uris"]
 
-        return NegativeAttributeFilter(label=_ref_extract(f["displayForm"]), values=not_in_values)
+        return NegativeAttributeFilter(label=ref_extract(f["displayForm"]), values=not_in_values)
     elif "relativeDateFilter" in filter_obj:
         f = filter_obj["relativeDateFilter"]
 
         # there is filter present, but uses all time
         if ("from" not in f) or ("to" not in f):
-            return AllTimeFilter(_ref_extract_obj_id(f["dataSet"]))
+            return AllTimeFilter(ref_extract_obj_id(f["dataSet"]))
 
         return RelativeDateFilter(
-            dataset=_ref_extract_obj_id(f["dataSet"]),
+            dataset=ref_extract_obj_id(f["dataSet"]),
             granularity=_GRANULARITY_CONVERSION[f["granularity"]],
             from_shift=f["from"],
             to_shift=f["to"],
@@ -211,13 +191,13 @@ def _convert_filter_to_computable(filter_obj: dict[str, Any]) -> Filter:
     elif "absoluteDateFilter" in filter_obj:
         f = filter_obj["absoluteDateFilter"]
 
-        return AbsoluteDateFilter(dataset=_ref_extract_obj_id(f["dataSet"]), from_date=f["from"], to_date=f["to"])
+        return AbsoluteDateFilter(dataset=ref_extract_obj_id(f["dataSet"]), from_date=f["from"], to_date=f["to"])
     elif "measureValueFilter" in filter_obj:
         f = filter_obj["measureValueFilter"]
 
         # no condition means no limitation
         if "condition" not in f:
-            return AllMetricValueFilter(metric=_ref_extract(f["measure"]))
+            return AllMetricValueFilter(metric=ref_extract(f["measure"]))
 
         condition = f["condition"]
 
@@ -226,7 +206,7 @@ def _convert_filter_to_computable(filter_obj: dict[str, Any]) -> Filter:
             treat_values_as_null = c.get("treatNullValuesAs")
 
             return MetricValueFilter(
-                metric=_ref_extract(f["measure"]),
+                metric=ref_extract(f["measure"]),
                 operator=c["operator"],
                 values=c["value"],
                 treat_nulls_as=treat_values_as_null,
@@ -235,7 +215,7 @@ def _convert_filter_to_computable(filter_obj: dict[str, Any]) -> Filter:
             c = condition["range"]
             treat_values_as_null = c.get("treatNullValuesAs")
             return MetricValueFilter(
-                metric=_ref_extract(f["measure"]),
+                metric=ref_extract(f["measure"]),
                 operator=c["operator"],
                 values=(c["from"], c["to"]),
                 treat_nulls_as=treat_values_as_null,
@@ -245,13 +225,13 @@ def _convert_filter_to_computable(filter_obj: dict[str, Any]) -> Filter:
         # mypy is unable to automatically convert Union[str, ObjId] to Union[str, ObjId, Attribute, Metric]
         # so use explicit cast here
         dimensionality = (
-            [cast(Union[str, ObjId, Attribute, Metric], _ref_extract(a)) for a in f["attributes"]]
+            [cast(Union[str, ObjId, Attribute, Metric], ref_extract(a)) for a in f["attributes"]]
             if "attributes" in f
             else None
         )
 
         return RankingFilter(
-            metrics=[_ref_extract(f["measure"])],
+            metrics=[ref_extract(f["measure"])],
             dimensionality=dimensionality,
             operator=f["operator"],
             value=f["value"],
@@ -274,7 +254,7 @@ def _convert_metric_to_computable(metric: dict[str, Any]) -> Metric:
 
         return SimpleMetric(
             local_id=local_id,
-            item=_ref_extract_obj_id(d["item"]),
+            item=ref_extract_obj_id(d["item"]),
             aggregation=aggregation,
             compute_ratio=compute_ratio,
             filters=filters,
@@ -282,7 +262,7 @@ def _convert_metric_to_computable(metric: dict[str, Any]) -> Metric:
 
     elif "popMeasureDefinition" in measure_def:
         d = measure_def["popMeasureDefinition"]
-        date_attributes = [PopDate(attribute=_ref_extract_obj_id(d["popAttribute"]), periods_ago=1)]
+        date_attributes = [PopDate(attribute=ref_extract_obj_id(d["popAttribute"]), periods_ago=1)]
 
         return PopDateMetric(
             local_id=local_id,
@@ -293,7 +273,7 @@ def _convert_metric_to_computable(metric: dict[str, Any]) -> Metric:
     elif "previousPeriodMeasure" in measure_def:
         d = measure_def["previousPeriodMeasure"]
 
-        date_datasets = [PopDateDataset(_ref_extract(dd["dataSet"]), dd["periodsAgo"]) for dd in d["dateDataSets"]]
+        date_datasets = [PopDateDataset(ref_extract(dd["dataSet"]), dd["periodsAgo"]) for dd in d["dateDataSets"]]
 
         return PopDatesetMetric(
             local_id=local_id,
@@ -414,7 +394,7 @@ class VisualizationAttribute:
         return self._a.get("showAllValues")
 
     def as_computable(self) -> Attribute:
-        return Attribute(local_id=self.local_id, label=_ref_extract(self.label), show_all_values=self.show_all_values)
+        return Attribute(local_id=self.local_id, label=ref_extract(self.label), show_all_values=self.show_all_values)
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -458,6 +438,38 @@ class VisualizationFilter:
 
     def __repr__(self) -> str:
         return repr(self._filter)
+
+
+class VisualizationAttributeFilterConfig:
+    """
+    Represents attribute filter configuration used by a visualization.
+    """
+
+    def __init__(self, afc: tuple[str, Any]) -> None:
+        local_id, data = afc
+        self._local_id = local_id
+        self._data = data
+
+    @property
+    def local_id(self) -> str:
+        return self._local_id
+
+    @property
+    def label_id(self) -> str:
+        return self._data["displayAsLabel"]["identifier"]["id"]
+
+    @property
+    def type(self) -> str:
+        return self._data["displayAsLabel"]["identifier"]["type"]
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
+    def __repr__(self) -> str:
+        return (
+            f"VisualizationAttributeFilterConfig(local_id='{self.local_id}', label_id='{self.label_id}', "
+            f"type='{self.type}')"
+        )
 
 
 class VisualizationSortLocator:
@@ -566,6 +578,7 @@ class Visualization:
         side_loads: Optional[SideLoads] = None,
     ) -> None:
         self._vo = from_vis_obj
+        self._attribute_filter_configs: Optional[list[VisualizationAttributeFilterConfig]] = None
         self._buckets: Optional[list[VisualizationBucket]] = None
         self._filters: Optional[list[VisualizationFilter]] = None
         self._sorts: Optional[list[VisualizationSort]] = None
@@ -587,6 +600,15 @@ class Visualization:
     def are_relations_valid(self) -> str:
         # Fallback to true for tests, where fixtures were generated without HTTP header activating this feature
         return self._vo["attributes"].get("areRelationsValid", "true")
+
+    @property
+    def attribute_filter_configs(self) -> Optional[list[VisualizationAttributeFilterConfig]]:
+        visualization_attribute_filter_configs = safeget(self._vo, ["attributes", "content", "attributeFilterConfigs"])
+        if self._attribute_filter_configs is None and visualization_attribute_filter_configs is not None:
+            self._attribute_filter_configs = [
+                VisualizationAttributeFilterConfig(afc) for afc in visualization_attribute_filter_configs.items()
+            ]
+        return self._attribute_filter_configs
 
     @property
     def buckets(self) -> list[VisualizationBucket]:
@@ -638,10 +660,7 @@ class Visualization:
         return VisualizationBucket({"items": [], "localIdentifier": _BUCKET_TYPE_TO_LOCAL_ID[bucket_type]})
 
     def has_bucket_of_type(self, bucket_type: BucketType) -> bool:
-        for b in self.buckets:
-            if b.type == bucket_type:
-                return True
-        return False
+        return any(b.type == bucket_type for b in self.buckets)
 
     def has_row_and_col_totals(self) -> bool:
         row_bucket = self.get_bucket_of_type(BucketType.ROWS)
@@ -661,7 +680,7 @@ class Visualization:
 
     def get_labels_and_formats(self) -> tuple[dict[str, str], dict[str, str]]:
         """
-        Extracts labels and custom measure formats from the insight.
+        Extracts labels and custom measure formats from the visualization.
 
         :return: tuple of labels dict ({"label_id":"Label"}) and formats dict ({"measure_id":"#,##0.00"})
         """
@@ -737,7 +756,9 @@ class VisualizationService:
 
         return [Visualization(vis_obj, side_loads) for vis_obj in vis_objects.data]
 
-    def get_visualization(self, workspace_id: str, visualization_id: str) -> Visualization:
+    def get_visualization(
+        self, workspace_id: str, visualization_id: str, timeout: Optional[Union[int, float, tuple]] = None
+    ) -> Visualization:
         """Gets a single visualization from a workspace.
 
         Args:
@@ -745,6 +766,10 @@ class VisualizationService:
                 Workspace identification string e.g. "demo"
             visualization_id (str):
                 Visualization identifier string e.g. "bikes"
+            timeout (int | float | tuple):
+                Timeout in seconds for the request. If a tuple is provided, the first element is the connect timeout
+                and the second element is the read timeout. If a single value is provided, it is used as both connect
+                and read timeout. If None, the default timeout is used.
 
         Returns:
             Visualization:
@@ -755,109 +780,10 @@ class VisualizationService:
             object_id=visualization_id,
             include=["ALL"],
             _check_return_type=False,
+            _request_timeout=timeout,
         )
-        side_loads = SideLoads(vis_obj.included)
+        side_loads = None
+        if hasattr(vis_obj, "included"):
+            side_loads = SideLoads(vis_obj.included)
 
         return Visualization(vis_obj.data, side_loads)
-
-    def get_insights(self, workspace_id: str) -> list[Visualization]:
-        warn(
-            "This method is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'get_visualizations' method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.get_visualizations(workspace_id)
-
-    def get_insight(self, workspace_id: str, insight_id: str) -> Visualization:
-        warn(
-            "This method is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'get_visualization' method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.get_visualization(workspace_id, insight_id)
-
-
-# Note: the classes below are going to be deprecated
-
-
-class InsightMetric(VisualizationMetric):
-    def __init__(self, metric: dict[str, Any]) -> None:
-        warn(
-            "This class is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'VisualizationMetric' class instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(metric)
-
-
-class InsightAttribute(VisualizationAttribute):
-    def __init__(self, attribute: dict[str, Any]) -> None:
-        warn(
-            "This class is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'VisualizationAttribute' class instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(attribute)
-
-
-class InsightTotal(VisualizationTotal):
-    def __init__(self, total: dict[str, Any]) -> None:
-        warn(
-            "This class is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'VisualizationTotal' class instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(total)
-
-
-class InsightFilter(VisualizationFilter):
-    def __init__(self, f: dict[str, Any]) -> None:
-        warn(
-            "This class is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'VisualizationFilter' class instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(f)
-
-
-class InsightBucket(VisualizationBucket):
-    def __init__(self, bucket: dict[str, Any]) -> None:
-        warn(
-            "This class is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'VisualizationBucket' class instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(bucket)
-
-
-class Insight(Visualization):
-    def __init__(
-        self,
-        from_vis_obj: dict[str, Any],
-        side_loads: Optional[SideLoads] = None,
-    ) -> None:
-        warn(
-            "This class is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'Visualization' class instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(from_vis_obj, side_loads)
-
-
-class InsightService(VisualizationService):
-    def __init__(self, api_client: GoodDataApiClient) -> None:
-        warn(
-            "This class is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'VisualizationService' class instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(api_client)

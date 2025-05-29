@@ -5,7 +5,10 @@ NO_CLIENT_GD_PROJECTS_ABS = $(filter-out %client, $(wildcard $(CURDIR)/*gooddata
 NO_CLIENT_GD_PROJECTS_DIRS = $(foreach dir, $(NO_CLIENT_GD_PROJECTS_ABS), $(notdir $(dir)))
 # TODO: replace API_VERSION in the future by call to API
 API_VERSION="v1"
+# Generate from localhost
 BASE_URL="http://localhost:3000"
+# Generate from PROD
+# BASE_URL="https://demo-cicd.cloud.gooddata.com"
 URL="${BASE_URL}/api/${API_VERSION}/schemas"
 
 include ci_tests.mk
@@ -16,9 +19,17 @@ all:
 .PHONY: dev
 dev:
 	rm -rf .venv
-	python3.11 -m venv .venv --upgrade-deps
+	python3.13 -m venv .venv --upgrade-deps
 	.venv/bin/pip3 install -r dev-requirements.txt
 	.venv/bin/pre-commit install
+
+.PHONY: lint
+lint:
+	.venv/bin/ruff check .
+
+.PHONY: lint-fix
+lint-fix:
+	.venv/bin/ruff check . --fix
 
 .PHONY: format
 format:
@@ -30,8 +41,8 @@ format-diff:
 
 .PHONY: format-fix
 format-fix:
-	.venv/bin/ruff check .
 	.venv/bin/ruff format .
+	.venv/bin/ruff check . --fix --fixable I
 
 
 define download_client
@@ -56,6 +67,7 @@ download:
 	$(call download_client,metadata)
 	$(call download_client,scan)
 	$(call download_client,"export")
+	$(call download_client,automation)
 
 .PHONY: mypy
 mypy:

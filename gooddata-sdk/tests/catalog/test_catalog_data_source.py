@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional, Union
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -29,6 +29,7 @@ from gooddata_sdk import (
     DatabricksAttributes,
     ExecutionDefinition,
     GoodDataSdk,
+    KeyPairCredentials,
     MariaDbAttributes,
     MsSqlAttributes,
     MySqlAttributes,
@@ -41,6 +42,8 @@ from gooddata_sdk import (
     TokenCredentialsFromFile,
     VerticaAttributes,
 )
+from gooddata_sdk.catalog.data_source.entity_model.data_source import DatabaseAttributes
+from gooddata_sdk.catalog.entity import ClientSecretCredentialsFromFile
 from tests_support.file_utils import load_json
 from tests_support.vcrpy_utils import get_vcr
 
@@ -108,7 +111,7 @@ def test_scan_pdm_and_generate_logical_model(test_config: dict):
     assert len(declarative_model.ldm.date_instances) == len(generated_declarative_model.ldm.date_instances)
 
 
-def build_pdm_sql_datasets() -> List[CatalogPdmSql]:
+def build_pdm_sql_datasets() -> list[CatalogPdmSql]:
     return [
         # Test sql-dataset specific attributes, facts, references
         CatalogPdmSql(
@@ -218,8 +221,6 @@ def _create_default_data_source(sdk: GoodDataSdk, data_source_id: str = "test"):
             username="demouser",
             password="demopass",
         ),
-        enable_caching=True,
-        cache_path=["cache_schema"],
         url_params=[("autosave", "true")],
     )
     sdk.catalog_data_source.create_or_update_data_source(data_source=expected_data_source)
@@ -227,7 +228,7 @@ def _create_default_data_source(sdk: GoodDataSdk, data_source_id: str = "test"):
     assert expected_data_source == data_source
 
 
-def _get_data_source(data_sources: List[CatalogDataSource], data_source_id: str) -> Optional[CatalogDataSource]:
+def _get_data_source(data_sources: list[CatalogDataSource], data_source_id: str) -> Optional[CatalogDataSource]:
     for data_source in data_sources:
         if data_source.id == data_source_id:
             return data_source
@@ -254,7 +255,6 @@ def test_catalog_create_update_list_data_source(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("autosave", "false")],
         )
         sdk.catalog_data_source.create_or_update_data_source(updated_data_source)
@@ -296,7 +296,6 @@ def test_catalog_create_data_source_redshift_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("autosave", "true")],
         ),
     )
@@ -316,7 +315,6 @@ def test_catalog_create_data_source_vertica_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("TLSmode", "false")],
         ),
     )
@@ -336,8 +334,22 @@ def test_catalog_create_data_source_snowflake_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=True,
-            cache_path=["cache_schema"],
+            url_params=[("useProxy", "true")],
+        ),
+    )
+
+    _create_delete_ds(
+        sdk=sdk,
+        data_source=CatalogDataSourceSnowflake(
+            id="test",
+            name="Test",
+            db_specific_attributes=SnowflakeAttributes(account="gooddata", warehouse="TIGER", db_name="TIGER"),
+            schema="demo",
+            credentials=KeyPairCredentials(
+                username="demouser",
+                private_key="private_key",
+                private_key_passphrase="private_key_passphrase",
+            ),
             url_params=[("useProxy", "true")],
         ),
     )
@@ -354,8 +366,6 @@ def test_catalog_create_data_source_bigquery_spec(test_config):
                 name="Test",
                 schema="demo",
                 credentials=TokenCredentialsFromFile(file_path=Path("credentials") / "bigquery_service_account.json"),
-                enable_caching=True,
-                cache_path=["cache_schema"],
                 parameters=[{"name": "projectId", "value": "abc"}],
             ),
         )
@@ -379,8 +389,6 @@ def test_catalog_create_data_source_dremio_spec(test_config):
                 password="demopass",
             ),
             schema="",
-            enable_caching=True,
-            cache_path=["$scratch"],
         ),
     )
 
@@ -407,6 +415,19 @@ def test_delete_declarative_data_sources(test_config):
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
     credentials_path = _current_dir / "load" / "data_source_credentials" / "data_sources_credentials.yaml"
     expected_json_path = _current_dir / "expected" / "declarative_data_sources.json"
+
+    def token_from_file_side_effect(file_path: Union[str, Path], base64_encode: bool):
+        if file_path == "~/home/secrets.json":
+            return test_config["bigquery_token"]
+        elif file_path == "databricks-token":
+            return test_config["databricks_token"]
+        else:
+            raise ValueError(f"Unexpected argument: {file_path}")
+
+    TokenCredentialsFromFile.token_from_file = MagicMock(side_effect=token_from_file_side_effect)
+    ClientSecretCredentialsFromFile.client_secret_from_file = MagicMock(
+        return_value=test_config["databricks_client_secret"]
+    )
 
     try:
         sdk.catalog_data_source.put_declarative_data_sources(CatalogDeclarativeDataSources(data_sources=[]))
@@ -438,18 +459,34 @@ def test_load_and_put_declarative_data_sources(test_config):
     expected_json_path = _current_dir / "expected" / "declarative_data_sources.json"
     try:
         sdk.catalog_data_source.put_declarative_data_sources(CatalogDeclarativeDataSources(data_sources=[]))
-        TokenCredentialsFromFile.token_from_file = MagicMock(return_value=test_config["bigquery_token"])
+
+        def token_from_file_side_effect(file_path: Union[str, Path], base64_encode: bool = True):
+            if file_path == "~/home/secrets.json":
+                return test_config["bigquery_token"]
+            elif file_path == "databricks-token":
+                return test_config["databricks_token"]
+            else:
+                raise ValueError(f"Unexpected argument: {file_path}")
+
+        TokenCredentialsFromFile.token_from_file = MagicMock(side_effect=token_from_file_side_effect)
+        ClientSecretCredentialsFromFile.client_secret_from_file = MagicMock(
+            return_value=test_config["databricks_client_secret"]
+        )
         sdk.catalog_data_source.load_and_put_declarative_data_sources(load_folder, credentials_path)
         data_sources_o = sdk.catalog_data_source.get_declarative_data_sources()
-        assert len(data_sources_o.data_sources) == 3
+        assert len(data_sources_o.data_sources) == 5
         assert [data_source.id for data_source in data_sources_o.data_sources] == [
             "demo-bigquery-ds",
             "demo-test-ds",
+            "demo-test-ds-databricks-client-secret",
+            "demo-test-ds-databricks-token",
             "demo-vertica-ds",
         ]
         assert [data_source.type for data_source in data_sources_o.data_sources] == [
             "BIGQUERY",
             "POSTGRESQL",
+            "DATABRICKS",
+            "DATABRICKS",
             "VERTICA",
         ]
         assert len(data_sources_o.data_sources[0].parameters) == 1
@@ -466,6 +503,21 @@ def test_put_declarative_data_sources_connection(test_config):
     path = _current_dir / "expected" / "declarative_data_sources.json"
     credentials_path = _current_dir / "load" / "data_source_credentials" / "data_sources_credentials.yaml"
     data_sources_e = sdk.catalog_data_source.get_declarative_data_sources()
+    # Must filter out databricks data sources for this test as they do not have valid URLs
+    data_sources_e.data_sources = [item for item in data_sources_e.data_sources if "databricks" not in item.id]
+
+    def token_from_file_side_effect(file_path: Union[str, Path], base64_encode: bool):
+        if file_path == "~/home/secrets.json":
+            return test_config["bigquery_token"]
+        elif file_path == "databricks-token":
+            return test_config["databricks_token"]
+        else:
+            raise ValueError(f"Unexpected argument: {file_path}")
+
+    TokenCredentialsFromFile.token_from_file = MagicMock(side_effect=token_from_file_side_effect)
+    ClientSecretCredentialsFromFile.client_secret_from_file = MagicMock(
+        return_value=test_config["databricks_client_secret"]
+    )
 
     try:
         sdk.catalog_data_source.put_declarative_data_sources(data_sources_e, credentials_path, test_data_sources=True)
@@ -499,6 +551,8 @@ def test_declarative_data_sources(test_config):
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
     credentials_path = _current_dir / "load" / "data_source_credentials" / "data_sources_credentials.yaml"
     data_sources_e = sdk.catalog_data_source.get_declarative_data_sources()
+    # Must filter out databricks data sources for this test as they do not have valid URLs
+    data_sources_e.data_sources = [item for item in data_sources_e.data_sources if "databricks" not in item.id]
 
     try:
         sdk.catalog_data_source.test_data_sources_connection(data_sources_e)
@@ -507,12 +561,62 @@ def test_declarative_data_sources(test_config):
         sdk.catalog_data_source.test_data_sources_connection(data_sources_e, credentials_path)
 
 
+@gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_declarative_data_sources_databricks_client_secret.yaml"))
+def test_declarative_data_sources_databricks_client_secret(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    path = _current_dir / "expected" / "declarative_data_sources_databricks_client_secret.json"
+    ClientSecretCredentialsFromFile.client_secret_from_file = MagicMock(
+        return_value=test_config["databricks_client_secret"]
+    )
+    sdk._client._actions_api.test_data_source_definition = MagicMock()
+
+    credentials_path = _current_dir / "load" / "data_source_credentials" / "data_sources_credentials.yaml"
+    data_sources_e = CatalogDeclarativeDataSources.from_dict(load_json(path))
+
+    sdk.catalog_data_source.test_data_sources_connection(data_sources_e, credentials_path)
+    args, kwargs = sdk._client._actions_api.test_data_source_definition.call_args
+    assert len(args) == 1
+    assert args[0]._data_store["url"] == data_sources_e.data_sources[0].url
+    assert args[0]._data_store["client_id"] == data_sources_e.data_sources[0].client_id
+    assert args[0]._data_store["client_secret"] == test_config["databricks_client_secret"]
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_declarative_data_sources_databricks_token.yaml"))
+def test_declarative_data_sources_databricks_token(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    path = _current_dir / "expected" / "declarative_data_sources_databricks_token.json"
+    TokenCredentialsFromFile.token_from_file = MagicMock(return_value=test_config["databricks_token"])
+    sdk._client._actions_api.test_data_source_definition = MagicMock()
+
+    credentials_path = _current_dir / "load" / "data_source_credentials" / "data_sources_credentials.yaml"
+    data_sources_e = CatalogDeclarativeDataSources.from_dict(load_json(path))
+
+    sdk.catalog_data_source.test_data_sources_connection(data_sources_e, credentials_path)
+    args, kwargs = sdk._client._actions_api.test_data_source_definition.call_args
+    assert len(args) == 1
+    assert args[0]._data_store["url"] == data_sources_e.data_sources[0].url
+    assert args[0]._data_store["token"] == test_config["databricks_token"]
+
+
 @gd_vcr.use_cassette(str(_fixtures_dir / "demo_cache_strategy.yaml"))
 def test_cache_strategy(test_config: dict):
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
     data_source_id = test_config["data_source"]
     path = _current_dir / "expected" / "declarative_data_sources.json"
     credentials_path = _current_dir / "load" / "data_source_credentials" / "data_sources_credentials.yaml"
+
+    def token_from_file_side_effect(file_path: Union[str, Path], base64_encode: bool):
+        if file_path == "~/home/secrets.json":
+            return test_config["bigquery_token"]
+        elif file_path == "databricks-token":
+            return test_config["databricks_token"]
+        else:
+            raise ValueError(f"Unexpected argument: {file_path}")
+
+    TokenCredentialsFromFile.token_from_file = MagicMock(side_effect=token_from_file_side_effect)
+    ClientSecretCredentialsFromFile.client_secret_from_file = MagicMock(
+        return_value=test_config["databricks_client_secret"]
+    )
 
     try:
         sdk.catalog_data_source.patch_data_source_attributes(data_source_id, {"cache_strategy": "NEVER"})
@@ -640,69 +744,27 @@ def test_catalog_create_data_source_greenplum_spec(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=True,
-            cache_path=["cache_schema"],
             url_params=[("autosave", "true")],
         ),
     )
 """
 
 
-def test_postgres_url_creation(test_config):
-    data_source = CatalogDataSourcePostgres(
-        id="test",
-        name="Test",
-        db_specific_attributes=PostgresAttributes(host="localhost", db_name="demo"),
-        schema="demo",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demopass",
-        ),
-        enable_caching=True,
-        cache_path=["cache_schema"],
-        url_params=[("autosave", "true")],
-    )
-    assert data_source.url == "jdbc:postgresql://localhost:5432/demo?autosave=true"
-
-
-def test_snowflake_url_creation(test_config):
-    data_source = CatalogDataSourceSnowflake(
-        id="test",
-        name="Test",
-        db_specific_attributes=SnowflakeAttributes(account="gooddata", warehouse="TIGER", db_name="TIGER"),
-        schema="demo",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demopass",
-        ),
-        enable_caching=True,
-        cache_path=["cache_schema"],
-        url_params=[("useProxy", "true")],
-    )
-    assert (
-        data_source.url == "jdbc:snowflake://gooddata.snowflakecomputing.com:443?warehouse=TIGER&db=TIGER&useProxy=true"
-    )
-
-
 def test_allowed_data_source_type(test_config):
     allowed_types = JsonApiDataSourceInAttributes.allowed_values.get(("type",))
     for t in allowed_types.values():
-        try:
-            CatalogDataSource(
-                id="test",
-                name="Test2",
-                type=t,
-                url="jdbc:postgresql://localhost:5432/demo",
-                schema="demo",
-                credentials=BasicCredentials(
-                    username="demouser",
-                    password="demopass",
-                ),
-                enable_caching=False,
-                url_params=[("param", "value")],
-            )
-        except ValueError:
-            assert False, f"ValueError was raised for valid database type {t}"
+        CatalogDataSource(
+            id="test",
+            name="Test2",
+            type=t,
+            url="jdbc:postgresql://localhost:5432/demo",
+            schema="demo",
+            credentials=BasicCredentials(
+                username="demouser",
+                password="demopass",
+            ),
+            url_params=[("param", "value")],
+        )
     db_type = "nonsense"
     try:
         CatalogDataSource(
@@ -715,7 +777,6 @@ def test_allowed_data_source_type(test_config):
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("param", "value")],
         )
     except ValueError:
@@ -724,58 +785,70 @@ def test_allowed_data_source_type(test_config):
         assert False, "ValueError was not raised for nonsense database type"
 
 
-def test_catalog_data_source_mssql(test_config):
-    data_source = CatalogDataSourceMsSql(
+@pytest.mark.parametrize(
+    "db_class,attributes,url,parameters,url_params",
+    [
+        (
+            CatalogDataSourceMsSql,
+            MsSqlAttributes(host="Host", db_name="DbName"),
+            "jdbc:sqlserver://Host:1433;databaseName=DbName",
+            None,
+            None,
+        ),
+        (
+            CatalogDataSourceDatabricks,
+            DatabricksAttributes(host="Host", http_path="xyz123abc"),
+            "jdbc:databricks://Host:443/default;httpPath=xyz123abc",
+            [{"name": "catalog", "value": "super_catalog"}],
+            None,
+        ),
+        (
+            CatalogDataSourceMySql,
+            MySqlAttributes(host="localhost", port="3306"),
+            "jdbc:mysql://localhost:3306/my_schema",
+            None,
+            None,
+        ),
+        (
+            CatalogDataSourceMariaDb,
+            MariaDbAttributes(host="localhost", port="3306"),
+            "jdbc:mariadb://localhost:3306/my_schema",
+            None,
+            None,
+        ),
+        (
+            CatalogDataSourcePostgres,
+            PostgresAttributes(host="localhost", db_name="demo"),
+            "jdbc:postgresql://localhost:5432/demo?autosave=true",
+            None,
+            [("autosave", "true")],
+        ),
+        (
+            CatalogDataSourceSnowflake,
+            SnowflakeAttributes(account="gooddata", warehouse="TIGER", db_name="TIGER"),
+            "jdbc:snowflake://gooddata.snowflakecomputing.com:443?warehouse=TIGER&db=TIGER&useProxy=true",
+            None,
+            [("useProxy", "true")],
+        ),
+    ],
+)
+def test_jdbc_urls_creation(
+    db_class: type[CatalogDataSource],
+    attributes: type[DatabaseAttributes],
+    url: str,
+    parameters: Optional[list],
+    url_params: Optional[list],
+):
+    data_source = db_class(
         id="test",
         name="Test",
-        db_specific_attributes=MsSqlAttributes(host="Host", db_name="DbName"),
-        schema="Schema",
+        db_specific_attributes=attributes,
+        parameters=parameters,
+        schema="my_schema",
+        url_params=url_params,
         credentials=BasicCredentials(
             username="demouser",
             password="demopass",
         ),
     )
-    assert data_source.url == "jdbc:sqlserver://Host:1433;databaseName=DbName"
-
-
-def test_catalog_data_source_databricks(test_config):
-    data_source = CatalogDataSourceDatabricks(
-        id="test",
-        name="Test",
-        db_specific_attributes=DatabricksAttributes(host="Host", http_path="xyz123abc"),
-        schema="SCHEMA",
-        parameters=[{"name": "catalog", "value": "super_catalog"}],
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demospass",
-        ),
-    )
-    assert data_source.url == "jdbc:databricks://Host:443/default;httpPath=xyz123abc"
-
-
-def test_catalog_data_source_mysql(test_config):
-    data_source = CatalogDataSourceMySql(
-        id="test",
-        name="Test",
-        db_specific_attributes=MySqlAttributes(host="localhost", port="3306"),
-        schema="my_schema",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demospass",
-        ),
-    )
-    assert data_source.url == "jdbc:mysql://localhost:3306/my_schema"
-
-
-def test_catalog_data_source_mariadb(test_config):
-    data_source = CatalogDataSourceMariaDb(
-        id="test",
-        name="Test",
-        db_specific_attributes=MariaDbAttributes(host="localhost", port="3306"),
-        schema="my_schema",
-        credentials=BasicCredentials(
-            username="demouser",
-            password="demospass",
-        ),
-    )
-    assert data_source.url == "jdbc:mariadb://localhost:3306/my_schema"
+    assert data_source.url == url

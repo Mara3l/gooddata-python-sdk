@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-1. Ensure you have at minimum Python 3.11 installed; Python 3.10, 3.9 and 3.8 are optional for multi-environment tests
+1. Ensure you have at minimum Python 3.13 installed; Python 3.12, 3.11, 3.10 and 3.9 are optional for multi-environment tests
 
    This repo uses [tox](https://tox.readthedocs.io/en/latest/) and by default will try to run tests against all
    supported versions. If you have only subset of supported python interpreters installed, see
@@ -21,7 +21,7 @@
     source .venv/bin/activate
     ```
 
-   The `make dev` command will create a new Python 3.11 virtual environment in the `.venv` directory, install all
+   The `make dev` command will create a new Python 3.13 virtual environment in the `.venv` directory, install all
    third party dependencies into it and setup git hooks.
 
    Additionally, if you use [direnv](https://direnv.net/) you can run `direnv allow .envrc` to enable automatic
@@ -178,7 +178,7 @@ But there is one disadvantage. One needs GD.CN instance with the original setup 
 `docker-compose.yaml` in root of the repository is here to help. It starts:
 - GD.CN AIO in selected version
 - postgres with gooddata-fdw extension
-- service which setups GD.CN AIO demo project including PDM, LDM, metrics and insights
+- service which setups GD.CN AIO demo project including PDM, LDM, metrics and visualizations
 
 When a vcrpy supported test needs to be updated:
 - start GD.CN using above `docker-compose.yaml`
@@ -211,9 +211,9 @@ venv automatically. So when docker tox tests are executed after localhost tests 
   cd gooddata-sdk
   make test-ci
   ```
-- run all tests containing `http_headers` in name for py39 and py38 for all projects
+- run all tests containing `http_headers` in name for py310 and py39 for all projects
   ```bash
-  TEST_ENVS=py39,py38 ADD_ARGS="-k http_headers" make test-ci
+  TEST_ENVS=py310,py39 ADD_ARGS="-k http_headers" make test-ci
   ```
 - run tests on localhost against all-in-one image started with docker-compose
   ```bash

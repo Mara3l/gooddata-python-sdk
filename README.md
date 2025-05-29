@@ -27,13 +27,19 @@ create pandas series and data frames.
 
 Check out the GoodData Pandas [documentation](https://gooddata-pandas.readthedocs.io/en/latest/) to learn more and get started.
 
+### GoodData FlexConnect
+
+The [gooddata-flexconnect](./gooddata-flexconnect) package is the foundation for writing custom FlexConnect data sources.
+
+Check out the GoodData FlexConnect [documentation](https://www.gooddata.com/docs/cloud/connect-data/create-data-sources/flexconnect/) to learn more and get started.
+
 ### GoodData Foreign Data Wrapper
 
 > [!WARNING]
 > GoodData Foreign Data Wrapper is currently deprecated.
 
 The [gooddata-fdw](./gooddata-fdw) package provides a way
-to map GoodData Cloud semantic layer and/or insights stored in your GoodData Cloud
+to map GoodData Cloud semantic layer and/or visualizations stored in your GoodData Cloud
 into PostgreSQL as foreign tables that you can then query using SQL.
 
 Check out the GoodData Foreign Data Wrapper [documentation](https://gooddata-fdw.readthedocs.io/en/latest/) to learn more and get started.

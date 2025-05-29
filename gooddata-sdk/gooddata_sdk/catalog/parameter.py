@@ -1,7 +1,6 @@
 # (C) 2022 GoodData Corporation
-from typing import Type
-
 import attr
+from gooddata_api_client.model.data_source_parameter import DataSourceParameter
 from gooddata_api_client.model.parameter import Parameter
 
 from gooddata_sdk.catalog.base import Base
@@ -13,5 +12,8 @@ class CatalogParameter(Base):
     value: str
 
     @staticmethod
-    def client_class() -> Type[Parameter]:
+    def client_class() -> type[Parameter]:
         return Parameter
+
+    def to_data_source_parameter(self) -> DataSourceParameter:
+        return DataSourceParameter(name=self.name, value=self.value)

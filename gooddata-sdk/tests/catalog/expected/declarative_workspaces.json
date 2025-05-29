@@ -1,7 +1,9 @@
 {
   "workspaces": [
     {
+      "automations": [],
       "customApplicationSettings": [],
+      "filterViews": [],
       "hierarchyPermissions": [
         {
           "assignee": {
@@ -2270,7 +2272,8 @@
               "id": "top_10_products",
               "title": "Top 10 Products"
             }
-          ]
+          ],
+          "exportDefinitions": []
         },
         "ldm": {
           "datasets": [
@@ -2786,10 +2789,13 @@
         }
       ],
       "settings": [],
-      "userDataFilters": []
+      "userDataFilters": [],
+      "automations": []
     },
     {
+      "automations": [],
       "customApplicationSettings": [],
+      "filterViews": [],
       "hierarchyPermissions": [],
       "id": "demo_west",
       "model": {
@@ -2812,7 +2818,8 @@
           "dashboardPlugins": [],
           "filterContexts": [],
           "metrics": [],
-          "visualizationObjects": []
+          "visualizationObjects": [],
+          "exportDefinitions": []
         },
         "ldm": {
           "datasetExtensions": [
@@ -2841,10 +2848,13 @@
       },
       "permissions": [],
       "settings": [],
-      "userDataFilters": []
+      "userDataFilters": [],
+      "automations": []
     },
     {
+      "automations": [],
       "customApplicationSettings": [],
+      "filterViews": [],
       "hierarchyPermissions": [],
       "id": "demo_west_california",
       "model": {
@@ -2855,7 +2865,8 @@
           "dashboardPlugins": [],
           "filterContexts": [],
           "metrics": [],
-          "visualizationObjects": []
+          "visualizationObjects": [],
+          "exportDefinitions": []
         },
         "ldm": {
           "datasets": [],
@@ -2869,7 +2880,8 @@
       },
       "permissions": [],
       "settings": [],
-      "userDataFilters": []
+      "userDataFilters": [],
+      "automations": []
     }
   ],
   "workspaceDataFilters": [

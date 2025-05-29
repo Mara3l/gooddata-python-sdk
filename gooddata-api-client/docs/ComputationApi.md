@@ -9,6 +9,8 @@ Method | HTTP request | Description
 [**compute_valid_descendants**](ComputationApi.md#compute_valid_descendants) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/afm/computeValidDescendants | (BETA) Valid descendants
 [**compute_valid_objects**](ComputationApi.md#compute_valid_objects) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/afm/computeValidObjects | Valid objects
 [**explain_afm**](ComputationApi.md#explain_afm) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/afm/explain | AFM explain resource.
+[**key_driver_analysis**](ComputationApi.md#key_driver_analysis) | **POST** /api/v1/actions/workspaces/{workspaceId}/execution/computeKeyDrivers | (EXPERIMENTAL) Compute key driver analysis
+[**key_driver_analysis_result**](ComputationApi.md#key_driver_analysis_result) | **GET** /api/v1/actions/workspaces/{workspaceId}/execution/computeKeyDrivers/result/{resultId} | (EXPERIMENTAL) Get key driver analysis result
 [**retrieve_execution_metadata**](ComputationApi.md#retrieve_execution_metadata) | **GET** /api/v1/actions/workspaces/{workspaceId}/execution/afm/execute/result/{resultId}/metadata | Get a single execution result&#39;s metadata.
 [**retrieve_result**](ComputationApi.md#retrieve_result) | **GET** /api/v1/actions/workspaces/{workspaceId}/execution/afm/execute/result/{resultId} | Get a single execution result
 
@@ -160,7 +162,7 @@ with gooddata_api_client.ApiClient() as api_client:
                             type="label",
                         ),
                     ),
-                    local_identifier="2",
+                    local_identifier="attribute_1",
                     show_all_values=False,
                 ),
             ],
@@ -206,6 +208,7 @@ with gooddata_api_client.ApiClient() as api_client:
         ),
         settings=ExecutionSettings(
             data_sampling_percentage=0,
+            timestamp=dateutil_parser('1970-01-01T00:00:00.00Z'),
         ),
     ) # AfmExecution | 
     skip_cache = False # bool | Ignore all caches during execution of current request. (optional) if omitted the server will use the default value of False
@@ -257,7 +260,7 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | AFM Execution response with links to the result and server-enhanced dimensions from the original request. |  -  |
+**200** | AFM Execution response with links to the result and server-enhanced dimensions from the original request. |  * X-GDC-CANCEL-TOKEN - A token that can be used to cancel this execution <br>  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -379,7 +382,7 @@ with gooddata_api_client.ApiClient() as api_client:
                             type="label",
                         ),
                     ),
-                    local_identifier="2",
+                    local_identifier="attribute_1",
                     show_all_values=False,
                 ),
             ],
@@ -481,7 +484,7 @@ with gooddata_api_client.ApiClient() as api_client:
                             type="label",
                         ),
                     ),
-                    local_identifier="2",
+                    local_identifier="attribute_1",
                     show_all_values=False,
                 ),
             ],
@@ -527,6 +530,7 @@ with gooddata_api_client.ApiClient() as api_client:
         ),
         settings=ExecutionSettings(
             data_sampling_percentage=0,
+            timestamp=dateutil_parser('1970-01-01T00:00:00.00Z'),
         ),
     ) # AfmExecution | 
     explain_type = "MAQL" # str | Requested explain type. If not specified all types are bundled in a ZIP archive.  `MAQL` - MAQL Abstract Syntax Tree, execution dimensions and related info  `GRPC_MODEL` - Datasets used in execution  `GRPC_MODEL_SVG` - Generated SVG image of the datasets  `WDF` - Workspace data filters in execution workspace context  `QT` - Query Tree, created from MAQL AST using Logical Data Model,  contains all information needed to generate SQL  `QT_SVG` - Generated SVG image of the Query Tree  `OPT_QT` - Optimized Query Tree  `OPT_QT_SVG` - Generated SVG image of the Optimized Query Tree  `SQL` - Final SQL to be executed  `SETTINGS` - Settings used to execute explain request (optional)
@@ -575,6 +579,181 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Requested resource |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **key_driver_analysis**
+> KeyDriversResponse key_driver_analysis(workspace_id, key_drivers_request)
+
+(EXPERIMENTAL) Compute key driver analysis
+
+(EXPERIMENTAL) Computes key driver analysis for the provided execution definition.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import computation_api
+from gooddata_api_client.model.key_drivers_response import KeyDriversResponse
+from gooddata_api_client.model.key_drivers_request import KeyDriversRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = computation_api.ComputationApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    key_drivers_request = KeyDriversRequest(
+        aux_metrics=[
+            MeasureItem(
+                definition=MeasureDefinition(),
+                local_identifier="metric_1",
+            ),
+        ],
+        metric=MeasureItem(
+            definition=MeasureDefinition(),
+            local_identifier="metric_1",
+        ),
+        sort_direction="DESC",
+    ) # KeyDriversRequest | 
+    skip_cache = False # bool | Ignore all caches during execution of current request. (optional) if omitted the server will use the default value of False
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (EXPERIMENTAL) Compute key driver analysis
+        api_response = api_instance.key_driver_analysis(workspace_id, key_drivers_request)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ComputationApi->key_driver_analysis: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # (EXPERIMENTAL) Compute key driver analysis
+        api_response = api_instance.key_driver_analysis(workspace_id, key_drivers_request, skip_cache=skip_cache)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ComputationApi->key_driver_analysis: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **key_drivers_request** | [**KeyDriversRequest**](KeyDriversRequest.md)|  |
+ **skip_cache** | **bool**| Ignore all caches during execution of current request. | [optional] if omitted the server will use the default value of False
+
+### Return type
+
+[**KeyDriversResponse**](KeyDriversResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **key_driver_analysis_result**
+> KeyDriversResult key_driver_analysis_result(workspace_id, result_id)
+
+(EXPERIMENTAL) Get key driver analysis result
+
+(EXPERIMENTAL) Gets key driver analysis.
+
+### Example
+
+
+```python
+import time
+import gooddata_api_client
+from gooddata_api_client.api import computation_api
+from gooddata_api_client.model.key_drivers_result import KeyDriversResult
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = gooddata_api_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with gooddata_api_client.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = computation_api.ComputationApi(api_client)
+    workspace_id = "/6bUUGjjNSwg0_bs" # str | Workspace identifier
+    result_id = "a9b28f9dc55f37ea9f4a5fb0c76895923591e781" # str | Result ID
+    offset = 1 # int |  (optional)
+    limit = 1 # int |  (optional)
+
+    # example passing only required values which don't have defaults set
+    try:
+        # (EXPERIMENTAL) Get key driver analysis result
+        api_response = api_instance.key_driver_analysis_result(workspace_id, result_id)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ComputationApi->key_driver_analysis_result: %s\n" % e)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # (EXPERIMENTAL) Get key driver analysis result
+        api_response = api_instance.key_driver_analysis_result(workspace_id, result_id, offset=offset, limit=limit)
+        pprint(api_response)
+    except gooddata_api_client.ApiException as e:
+        print("Exception when calling ComputationApi->key_driver_analysis_result: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace identifier |
+ **result_id** | **str**| Result ID |
+ **offset** | **int**|  | [optional]
+ **limit** | **int**|  | [optional]
+
+### Return type
+
+[**KeyDriversResult**](KeyDriversResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -685,6 +864,7 @@ with gooddata_api_client.ApiClient() as api_client:
     excluded_total_dimensions = [
         "excludedTotalDimensions=dim_0,dim_1",
     ] # [str] | Identifiers of the dimensions where grand total data should not be returned for this request. A grand total will not be returned if all of its totalDimensions are in excludedTotalDimensions. (optional) if omitted the server will use the default value of []
+    x_gdc_cancel_token = "X-GDC-CANCEL-TOKEN_example" # str |  (optional)
 
     # example passing only required values which don't have defaults set
     try:
@@ -698,7 +878,7 @@ with gooddata_api_client.ApiClient() as api_client:
     # and optional values
     try:
         # Get a single execution result
-        api_response = api_instance.retrieve_result(workspace_id, result_id, offset=offset, limit=limit, excluded_total_dimensions=excluded_total_dimensions)
+        api_response = api_instance.retrieve_result(workspace_id, result_id, offset=offset, limit=limit, excluded_total_dimensions=excluded_total_dimensions, x_gdc_cancel_token=x_gdc_cancel_token)
         pprint(api_response)
     except gooddata_api_client.ApiException as e:
         print("Exception when calling ComputationApi->retrieve_result: %s\n" % e)
@@ -714,6 +894,7 @@ Name | Type | Description  | Notes
  **offset** | **[int]**| Request page with these offsets. Format is offset&#x3D;1,2,3,... - one offset for each dimensions in ResultSpec from originating AFM. | [optional] if omitted the server will use the default value of []
  **limit** | **[int]**| Return only this number of items. Format is limit&#x3D;1,2,3,... - one limit for each dimensions in ResultSpec from originating AFM. | [optional] if omitted the server will use the default value of []
  **excluded_total_dimensions** | **[str]**| Identifiers of the dimensions where grand total data should not be returned for this request. A grand total will not be returned if all of its totalDimensions are in excludedTotalDimensions. | [optional] if omitted the server will use the default value of []
+ **x_gdc_cancel_token** | **str**|  | [optional]
 
 ### Return type
 

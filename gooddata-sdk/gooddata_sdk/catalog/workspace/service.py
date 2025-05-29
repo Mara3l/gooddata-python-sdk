@@ -9,15 +9,19 @@ from copy import deepcopy
 from math import ceil
 from pathlib import Path
 from time import time
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Optional
+from xml.etree import ElementTree as ET
 
 import attrs
+from gooddata_api_client.api.translations_api import LocaleRequest
 from gooddata_api_client.exceptions import NotFoundException
 from gooddata_api_client.model.resolve_settings_request import ResolveSettingsRequest
 
+from gooddata_sdk import CatalogDeclarativeAutomation
 from gooddata_sdk.catalog.catalog_service_base import CatalogServiceBase
 from gooddata_sdk.catalog.permission.service import CatalogPermissionService
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.workspace import (
+    CatalogDeclarativeFilterView,
     CatalogDeclarativeUserDataFilters,
     CatalogDeclarativeWorkspaceDataFilters,
     CatalogDeclarativeWorkspaceModel,
@@ -25,6 +29,10 @@ from gooddata_sdk.catalog.workspace.declarative_model.workspace.workspace import
     get_workspace_folder,
 )
 from gooddata_sdk.catalog.workspace.entity_model.content_objects.workspace_setting import CatalogWorkspaceSetting
+from gooddata_sdk.catalog.workspace.entity_model.filter_view import (
+    CatalogFilterView,
+    CatalogFilterViewDocument,
+)
 from gooddata_sdk.catalog.workspace.entity_model.user_data_filter import (
     CatalogUserDataFilter,
     CatalogUserDataFilterDocument,
@@ -32,7 +40,9 @@ from gooddata_sdk.catalog.workspace.entity_model.user_data_filter import (
 from gooddata_sdk.catalog.workspace.entity_model.workspace import CatalogWorkspace
 from gooddata_sdk.client import GoodDataApiClient
 from gooddata_sdk.utils import (
+    HttpMethod,
     create_directory,
+    get_namespace_from_xliff,
     load_all_entities,
     load_all_entities_dict,
     read_layout_from_file,
@@ -44,7 +54,7 @@ logger = logging.getLogger(__name__)
 
 class CatalogWorkspaceService(CatalogServiceBase):
     def __init__(self, api_client: GoodDataApiClient) -> None:
-        super(CatalogWorkspaceService, self).__init__(api_client)
+        super().__init__(api_client)
         self._permissions_service = CatalogPermissionService(api_client)
 
     # Entities methods
@@ -120,11 +130,11 @@ class CatalogWorkspaceService(CatalogServiceBase):
             )
         self._entities_api.delete_entity_workspaces(workspace_id)
 
-    def list_workspaces(self) -> List[CatalogWorkspace]:
+    def list_workspaces(self) -> list[CatalogWorkspace]:
         """Returns a list of all workspaces in current organization
 
         Returns:
-            List[CatalogWorkspace]: List of workspaces in the current organization.
+            list[CatalogWorkspace]: List of workspaces in the current organization.
 
         """
         get_workspaces = functools.partial(
@@ -171,7 +181,7 @@ class CatalogWorkspaceService(CatalogServiceBase):
             self._entities_api.get_entity_workspace_settings(workspace_id, workspace_setting_id).data
         )
 
-    def list_workspace_settings(self, workspace_id: str) -> List[CatalogWorkspaceSetting]:
+    def list_workspace_settings(self, workspace_id: str) -> list[CatalogWorkspaceSetting]:
         get_workspace_settings = functools.partial(
             self._entities_api.get_all_entities_workspace_settings,
             workspace_id,
@@ -222,11 +232,11 @@ class CatalogWorkspaceService(CatalogServiceBase):
 
     # Declarative methods - workspaces
 
-    def get_declarative_workspaces(self, exclude: Optional[List[str]] = None) -> CatalogDeclarativeWorkspaces:
+    def get_declarative_workspaces(self, exclude: Optional[list[str]] = None) -> CatalogDeclarativeWorkspaces:
         """Get all workspaces in the current organization in a declarative form.
 
         Args:
-            exclude (Optional[List[str]]):
+            exclude (Optional[list[str]]):
                 Defines properties which should not be included in the payload.
 
         Returns:
@@ -235,7 +245,9 @@ class CatalogWorkspaceService(CatalogServiceBase):
         """
         if exclude is None:
             exclude = []
-        return CatalogDeclarativeWorkspaces.from_api(self._layout_api.get_workspaces_layout(exclude=exclude))
+        return CatalogDeclarativeWorkspaces.from_dict(
+            self._layout_api.get_workspaces_layout(exclude=exclude).to_dict(camel_case=False), camel_case=False
+        )
 
     def put_declarative_workspaces(self, workspace: CatalogDeclarativeWorkspaces) -> None:
         """Set layout of all workspaces and their hierarchy. Parameter is in declarative form.
@@ -293,14 +305,14 @@ class CatalogWorkspaceService(CatalogServiceBase):
     # Declarative methods - workspace
 
     def get_declarative_workspace(
-        self, workspace_id: str, exclude: Optional[List[str]] = None
+        self, workspace_id: str, exclude: Optional[list[str]] = None
     ) -> CatalogDeclarativeWorkspaceModel:
         """Retrieve a workspace layout.
 
         Args:
             workspace_id (str):
                 Workspace identification string e.g. "demo"
-            exclude (Optional[List[str]]):
+            exclude (Optional[list[str]]):
                 Defines properties which should not be included in the payload.
 
         Returns:
@@ -309,8 +321,9 @@ class CatalogWorkspaceService(CatalogServiceBase):
         """
         if exclude is None:
             exclude = []
-        return CatalogDeclarativeWorkspaceModel.from_api(
-            self._layout_api.get_workspace_layout(workspace_id=workspace_id, exclude=exclude)
+        return CatalogDeclarativeWorkspaceModel.from_dict(
+            self._layout_api.get_workspace_layout(workspace_id=workspace_id, exclude=exclude).to_dict(camel_case=False),
+            camel_case=False,
         )
 
     def put_declarative_workspace(
@@ -335,7 +348,7 @@ class CatalogWorkspaceService(CatalogServiceBase):
         self._layout_api.put_workspace_layout(workspace_id, workspace.to_api())
 
     def store_declarative_workspace(
-        self, workspace_id: str, layout_root_path: Path = Path.cwd(), exclude: Optional[List[str]] = None
+        self, workspace_id: str, layout_root_path: Path = Path.cwd(), exclude: Optional[list[str]] = None
     ) -> None:
         """Store workspace layout in a directory hierarchy.
 
@@ -344,7 +357,7 @@ class CatalogWorkspaceService(CatalogServiceBase):
                 Workspace identification string e.g. "demo"
             layout_root_path (Path, optional):
                 Path to the root of the layout directory. Defaults to Path.cwd().
-            exclude (Optional[List[str]]):
+            exclude (Optional[list[str]]):
                 Defines properties which should not be included in the payload.
         """
         workspace_folder = get_workspace_folder(
@@ -528,6 +541,7 @@ class CatalogWorkspaceService(CatalogServiceBase):
             provision_workspace: Should new workspace for the target language be provisioned?
                                         Including setting of corresponding locales.
             store_layouts: Store declarative layouts of all workspaces to disk
+            place_in_hierarchy (bool): Flag if localized workspace should be placed in the hierarchy.
 
         Returns:
             None
@@ -574,8 +588,8 @@ class CatalogWorkspaceService(CatalogServiceBase):
 
     @staticmethod
     def translate_in_batches(
-        to_translate: Set[str], to_lang: str, from_lang: str, translator_func: Callable, batch_size: int = 100
-    ) -> Dict[str, str]:
+        to_translate: set[str], to_lang: str, from_lang: str, translator_func: Callable, batch_size: int = 100
+    ) -> dict[str, str]:
         start = time()
         # Group the values into batches
         value_batches = [list(to_translate)[i : i + batch_size] for i in range(0, len(to_translate), batch_size)]
@@ -595,14 +609,13 @@ class CatalogWorkspaceService(CatalogServiceBase):
             # Extract the translated values and add them to the list
             translated_values.extend(api_result)
         # Update the data dictionary with the translated values
-        for key, value in zip(to_translate, translated_values):
-            result[key] = value
+        result = {key: value for key, value in zip(to_translate, translated_values)}
         duration = int((time() - start) * 1000)
         logger.info(f"Translation finished duration={duration}")
         return result
 
     @staticmethod
-    def read_translation_file(translation_file_path: Path) -> Dict[str, str]:
+    def read_translation_file(translation_file_path: Path) -> dict[str, str]:
         # Read already existing translation file, if it exists
         already_translated = {}
         if translation_file_path.is_file():
@@ -647,13 +660,13 @@ class CatalogWorkspaceService(CatalogServiceBase):
 
     def translate_if_requested(
         self,
-        to_translate: Set[str],
+        to_translate: set[str],
         translator_func: Optional[Callable],
         to_lang: str,
         from_lang: str,
-        already_translated: Dict[str, str],
+        already_translated: dict[str, str],
         translation_file_path: Path,
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         if to_translate and translator_func:
             translated = {
                 **self.translate_in_batches(to_translate, to_lang, from_lang, translator_func),
@@ -677,27 +690,27 @@ class CatalogWorkspaceService(CatalogServiceBase):
         return translated
 
     @staticmethod
-    def add_title_description(to_translate: Set[str], title: Optional[str], description: Optional[str]) -> None:
+    def add_title_description(to_translate: set[str], title: Optional[str], description: Optional[str]) -> None:
         if title:
             to_translate.add(title)
         if description:
             to_translate.add(description)
 
     def add_title_description_tags(
-        self, to_translate: Set[str], title: Optional[str], description: Optional[str], tags: Optional[List[str]]
+        self, to_translate: set[str], title: Optional[str], description: Optional[str], tags: Optional[list[str]]
     ) -> None:
         self.add_title_description(to_translate, title, description)
         if tags:
             to_translate.update(set(tags))
 
     @staticmethod
-    def set_title_description(workspace_object: Any, translated: Dict[str, str]) -> None:
+    def set_title_description(workspace_object: Any, translated: dict[str, str]) -> None:
         if workspace_object.title:
             workspace_object.title = translated[workspace_object.title]
         if workspace_object.description:
             workspace_object.description = translated[workspace_object.description]
 
-    def set_title_description_tags(self, workspace_object: Any, translated: Dict[str, str]) -> None:
+    def set_title_description_tags(self, workspace_object: Any, translated: dict[str, str]) -> None:
         self.set_title_description(workspace_object, translated)
         if workspace_object.tags:
             workspace_object.tags = [translated[x] for x in workspace_object.tags]
@@ -706,8 +719,8 @@ class CatalogWorkspaceService(CatalogServiceBase):
         self,
         workspace: CatalogWorkspace,
         workspace_content: CatalogDeclarativeWorkspaceModel,
-        already_translated: Dict[str, str],
-    ) -> Set[str]:
+        already_translated: dict[str, str],
+    ) -> set[str]:
         # We translate each string just once. Collect all strings into a set()
         to_translate = set()
         to_translate.add(workspace.name)
@@ -734,9 +747,8 @@ class CatalogWorkspaceService(CatalogServiceBase):
                 self.add_title_description(to_translate, visualization.title, visualization.description)
                 for bucket in visualization.content["buckets"]:
                     for item in bucket["items"]:
-                        if "measure" in item:
-                            if "alias" in item["measure"]:
-                                to_translate.add(item["measure"]["alias"])
+                        if "measure" in item and "alias" in item["measure"]:
+                            to_translate.add(item["measure"]["alias"])
             for dashboard in workspace_content.analytics.analytical_dashboards or []:
                 self.add_title_description(to_translate, dashboard.title, dashboard.description)
                 # Hack: translate titles in free-form, which is not processed intentionally by this SDK
@@ -761,7 +773,7 @@ class CatalogWorkspaceService(CatalogServiceBase):
         new_workspace: CatalogWorkspace,
         new_workspace_content: CatalogDeclarativeWorkspaceModel,
         lang: str,
-        translated: Dict[str, str],
+        translated: dict[str, str],
     ) -> None:
         # TODO - WS ID/NAME may not be handled if provisioning of WS is not requested
         lang_for_id = re.sub(r"[^a-zA-Z0-9_]", "_", lang)
@@ -788,9 +800,8 @@ class CatalogWorkspaceService(CatalogServiceBase):
                 self.set_title_description(visualization, translated)
                 for bucket in visualization.content["buckets"]:
                     for item in bucket["items"]:
-                        if "measure" in item:
-                            if "alias" in item["measure"]:
-                                item["measure"]["alias"] = translated[item["measure"]["alias"]]
+                        if "measure" in item and "alias" in item["measure"]:
+                            item["measure"]["alias"] = translated[item["measure"]["alias"]]
             for dashboard in new_workspace_content.analytics.analytical_dashboards or []:
                 self.set_title_description(dashboard, translated)
                 # Hack: translate titles in free-form, which is not processed intentionally by this SDK
@@ -805,6 +816,182 @@ class CatalogWorkspaceService(CatalogServiceBase):
                             section["header"]["title"] = translated.get(section["header"]["title"])
                         if "description" in section["header"]:
                             section["header"]["description"] = translated.get(section["header"]["description"])
+
+    @staticmethod
+    def _add_target_tags(xliff_content: str, translate_func: Callable) -> bytes:
+        """Add target tags to the XLIFF content for translation purposes.
+
+        Args:
+            xliff_content (str): The XLIFF content as a string.
+            translate_func (Optional[Callable]):
+                A function that translates the source text. It can take an optional argument
+                `already_translated` and `old_translation` for updating existing translations.
+
+        Returns:
+            bytes: The modified XLIFF content with target tags, encoded as UTF-8.
+        """
+        namespace = get_namespace_from_xliff(xliff_content)
+
+        ET.register_namespace("", namespace["ns"])
+        tree = ET.ElementTree(ET.fromstring(xliff_content))
+        root = tree.getroot()
+
+        # Segment is always parent of source/target - no need to find parents
+        for segment in root.findall(".//ns:segment", namespaces=namespace):
+            source = segment.find("ns:source", namespaces=namespace)
+            if source is not None and "".join(source.itertext()).strip():
+                to_translate = "".join(source.itertext()).strip()
+                target = segment.find("ns:target", namespaces=namespace)
+                if target is None:
+                    target = ET.Element("target")
+                    segment.append(target)
+                if not target.text or not target.text.strip():
+                    target.text = translate_func(to_translate)
+                else:
+                    old_translation = "".join(target.itertext()).strip()
+                    target.text = translate_func(
+                        to_translate=to_translate,
+                        already_translated=True,
+                        old_translation=old_translation,
+                    )
+
+        return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+
+    def get_metadata_localization(
+        self,
+        workspace_id: str,
+        target_language: str,
+    ) -> bytes:
+        """Retrieve the metadata localization for a workspace.
+
+        Args:
+            workspace_id (str): The ID of the workspace for which to retrieve the metadata localization.
+            target_language (str): The target language code for the localization.
+
+        Returns:
+            bytes: The encoded metadata localization in the target language.
+        """
+        ans = self._actions_api.retrieve_translations(
+            workspace_id=workspace_id,
+            locale_request=LocaleRequest(locale=target_language),
+            _preload_content=False,
+        )
+        return ans.data
+
+    def set_metadata_localization(
+        self,
+        workspace_id: str,
+        encoded_xml: bytes,
+    ) -> None:
+        """Set the metadata localization for a workspace.
+
+        Args:
+            workspace_id (str): The ID of the workspace to which the metadata localization applies.
+            encoded_xml (bytes): The encoded XML metadata to be set.
+
+        Returns:
+            None
+        """
+        self._client.do_request(
+            method=HttpMethod.POST,
+            endpoint=f"api/v1/actions/workspaces/{workspace_id}/translations/set",
+            content_type="application/xml",
+            data=encoded_xml,
+        )
+
+    def clean_metadata_localization(
+        self,
+        workspace_id: str,
+        target_language: str,
+    ) -> None:
+        """Clean the metadata localization for a workspace.
+
+        Args:
+            workspace_id (str): The ID of the workspace for which to clean the metadata localization.
+            target_language (str): The target language code for the localization to be cleaned.
+
+        Returns:
+            None
+        """
+        self._client.actions_api.clean_translations(
+            workspace_id=workspace_id, locale_request=LocaleRequest(target_language)
+        )
+
+    def add_metadata_locale(
+        self,
+        workspace_id: str,
+        target_language: str,
+        translator_func: Callable,
+        set_locale: bool = True,
+    ) -> None:
+        """Add and optionally set the metadata localization for a workspace in a target language.
+
+        Args:
+            workspace_id (str): The ID of the workspace.
+            target_language (str): The target language for the metadata localization.
+            translator_func (Callable): A function to translate the source text.
+            set_locale (bool): Flag to indicate if the locale settings should be updated in the workspace.
+
+        Returns:
+            None
+        """
+        ans = self._actions_api.retrieve_translations(
+            workspace_id=workspace_id,
+            locale_request=LocaleRequest(locale=target_language),
+            _preload_content=False,
+        )
+
+        encoded_xml = self._add_target_tags(ans.data.decode(), translator_func)
+
+        self.set_metadata_localization(workspace_id=workspace_id, encoded_xml=encoded_xml)
+        if set_locale:
+            metadata_locale = "METADATA_LOCALE"
+            locale = "LOCALE"
+
+            self.create_or_update_workspace_setting(
+                workspace_id,
+                CatalogWorkspaceSetting(
+                    id=metadata_locale, setting_type=metadata_locale, content={"value": target_language}
+                ),
+            )
+            self.create_or_update_workspace_setting(
+                workspace_id,
+                CatalogWorkspaceSetting(id=locale, setting_type=locale, content={"value": target_language}),
+            )
+
+    def save_metadata_locale_to_disk(self, workspace_id: str, target_language: str, file_path: Path) -> None:
+        """Save the metadata localization for a workspace to a file.
+
+        Args:
+            workspace_id (str): The ID of the workspace.
+            target_language (str): The target language for the metadata localization.
+            file_path (Path): The path to the file where the XLIFF content will be saved.
+
+        Returns:
+            None
+        """
+        xliff_content = self.get_metadata_localization(workspace_id, target_language)
+
+        ns = get_namespace_from_xliff(xliff_content.decode())
+
+        ET.register_namespace("", ns["ns"])
+        tree = ET.ElementTree(ET.fromstring(xliff_content))
+
+        tree.write(file_path, "utf-8")
+
+    def set_metadata_locale_from_disk(self, workspace_id: str, file_path: Path) -> None:
+        """Load and set the metadata localization for a workspace from a file.
+
+        Args:
+            workspace_id (str): The ID of the workspace to which the metadata localization applies.
+            file_path (Path): The path to the file containing the encoded XML metadata.
+
+        Returns:
+            None
+        """
+        with open(file_path, "rb") as f:
+            encoded_xml = f.read()
+            self.set_metadata_localization(workspace_id=workspace_id, encoded_xml=encoded_xml)
 
     # Declarative methods - workspace data filters
 
@@ -881,7 +1068,7 @@ class CatalogWorkspaceService(CatalogServiceBase):
         )
         self.put_declarative_workspace_data_filters(declarative_workspace_data_filters)
 
-    def list_user_data_filters(self, workspace_id: str) -> List[CatalogUserDataFilter]:
+    def list_user_data_filters(self, workspace_id: str) -> list[CatalogUserDataFilter]:
         """list all user data filers.
 
         Args:
@@ -889,7 +1076,7 @@ class CatalogWorkspaceService(CatalogServiceBase):
                 String containing id of the workspace.
 
         Returns:
-            List[CatalogUserDataFilter]:
+            list[CatalogUserDataFilter]:
                 List of user data filter entities.
         """
         get_user_data_filters = functools.partial(
@@ -1052,3 +1239,204 @@ class CatalogWorkspaceService(CatalogServiceBase):
             self.layout_organization_folder(layout_root_path)
         )
         self.put_declarative_user_data_filters(workspace_id, declarative_user_data_filters)
+
+    def get_declarative_automations(self, workspace_id: str) -> list[CatalogDeclarativeAutomation]:
+        """Retrieve a list of declarative automations.
+
+        Args:
+            workspace_id (str):
+                Workspace identification string e.g. "demo"
+
+        Returns:
+            list[CatalogDeclarativeAutomation]:
+                List of declarative automations.
+        """
+        return [
+            CatalogDeclarativeAutomation.from_dict(automation.to_dict())
+            for automation in self._layout_api.get_automations(workspace_id)
+        ]
+
+    def put_declarative_automations(self, workspace_id: str, automations: list[CatalogDeclarativeAutomation]) -> None:
+        """Set automations for the workspace.
+
+        Args:
+            workspace_id (str):
+                Workspace identification string e.g. "demo"
+            automations (list[CatalogDeclarativeAutomation]):
+                List of declarative automations.
+        Returns:
+            None
+        """
+        api_automations = [automation.to_api() for automation in automations]
+        self._layout_api.set_automations(workspace_id, api_automations)
+
+    def list_filters_views(self, workspace_id: str) -> list[CatalogFilterView]:
+        """list all filter views.
+
+        Args:
+            workspace_id (str):
+                String containing id of the workspace.
+
+        Returns:
+            list[CatalogFilterView]:
+                List of filter view entities.
+        """
+        get_filter_views = functools.partial(
+            self._entities_api.get_all_entities_filter_views,
+            workspace_id,
+            _check_return_type=False,
+            include=["ALL"],
+        )
+        filter_views = load_all_entities_dict(get_filter_views, camel_case=False)
+        return [CatalogFilterView.from_dict(v, camel_case=False) for v in filter_views["data"]]
+
+    def create_or_update_filter_view(self, workspace_id: str, filter_view: CatalogFilterView) -> None:
+        """Create a new filter view or overwrite an existing one.
+
+        Args:
+            workspace_id (str):
+                String containing id of the workspace.
+            filter_view (CatalogFilterView):
+                FilterView entity object.
+
+        Returns:
+            None
+        """
+        filter_view_document = CatalogFilterViewDocument(data=filter_view)
+        if filter_view.id is None:
+            self._entities_api.create_entity_filter_views(
+                workspace_id=workspace_id,
+                json_api_filter_view_in_document=filter_view_document.to_api(),
+            )
+        else:
+            try:
+                self.get_filter_view(workspace_id=workspace_id, filter_view_id=filter_view.id)
+                self._entities_api.update_entity_filter_views(
+                    workspace_id=workspace_id,
+                    object_id=filter_view.id,
+                    json_api_filter_view_in_document=filter_view_document.to_api(),
+                )
+            except NotFoundException:
+                self._entities_api.create_entity_filter_views(
+                    workspace_id=workspace_id,
+                    json_api_filter_view_in_document=filter_view_document.to_api(),
+                )
+
+    def get_filter_view(self, workspace_id: str, filter_view_id: str) -> CatalogFilterView:
+        """Get filter view by its id.
+
+        Args:
+            workspace_id (str):
+                String containing id of the workspace.
+            filter_view_id (str):
+                String containing id of the filter view.
+
+        Returns:
+            CatalogFilterView:
+                FilterView entity object.
+        """
+        filter_view_dict = self._entities_api.get_entity_filter_views(
+            workspace_id=workspace_id,
+            object_id=filter_view_id,
+            include=["ALL"],
+            _check_return_type=False,
+        ).data
+
+        return CatalogFilterView.from_dict(filter_view_dict, camel_case=True)
+
+    def delete_filter_view(self, workspace_id: str, filter_view_id: str) -> None:
+        """Delete filter view.
+
+        Args:
+            workspace_id (str):
+                String containing id of the workspace.
+            filter_view_id (str):
+                String containing id of the deleting filter view.
+
+        Returns:
+            None
+        """
+        self._entities_api.delete_entity_filter_views(workspace_id=workspace_id, object_id=filter_view_id)
+
+    def get_declarative_filter_views(self, workspace_id: str) -> list[CatalogDeclarativeFilterView]:
+        """Retrieve a list of declarative filter views.
+
+        Args:
+            workspace_id (str):
+                Workspace identification string e.g. "demo"
+
+        Returns:
+            list[CatalogDeclarativeFilterView]:
+                List of declarative filter views.
+        """
+        return [
+            CatalogDeclarativeFilterView.from_dict(filter_view.to_dict(), camel_case=False)
+            for filter_view in self._layout_api.get_filter_views(workspace_id)
+        ]
+
+    def put_declarative_filter_views(self, workspace_id: str, filter_views: list[CatalogDeclarativeFilterView]) -> None:
+        """Set filter views for the workspace.
+
+        Args:
+            workspace_id (str):
+                Workspace identification string e.g. "demo"
+            filter_views (list[CatalogDeclarativeFilterView]):
+                List of declarative filter views.
+
+        Returns:
+            None
+        """
+        api_filter_views = [filter_view.to_api() for filter_view in filter_views]
+        self._layout_api.set_filter_views(workspace_id=workspace_id, declarative_filter_view=api_filter_views)
+
+    def store_declarative_filter_views(self, workspace_id: str, layout_root_path: Path = Path.cwd()) -> None:
+        """Store filter views layout in a directory hierarchy.
+
+        Args:
+            workspace_id (str):
+                id of the related workspace
+            layout_root_path (Path, optional):
+                Path to the root of the layout directory. Defaults to Path.cwd().
+
+        Returns:
+            None
+        """
+        filter_views = self.get_declarative_filter_views(workspace_id)
+        CatalogDeclarativeFilterView.store_filter_views_to_disk(
+            filter_views, self.layout_organization_folder(layout_root_path)
+        )
+
+    def load_declarative_filter_views(self, layout_root_path: Path = Path.cwd()) -> list[CatalogDeclarativeFilterView]:
+        """Loads filter views layout, which was stored using `store_declarative_filter_views`.
+
+        Args:
+            layout_root_path (Path, optional):
+                Path to the root of the layout directory. Defaults to Path.cwd().
+
+        Returns:
+            list[CatalogDeclarativeFilterView]:
+                List of declarative filter views.
+        """
+        return CatalogDeclarativeFilterView.load_filter_views_from_disk(
+            self.layout_organization_folder(layout_root_path)
+        )
+
+    def load_and_put_declarative_filter_views(self, workspace_id: str, layout_root_path: Path = Path.cwd()) -> None:
+        """Loads and sets the layouts stored using `store_declarative_filter_views`.
+
+        This method combines `load_declarative_filter_views` and `put_declarative_filter_views`
+        methods to load and set layouts stored using `store_declarative_filter_views`.
+
+        Args:
+            workspace_id (str):
+                String containing id of the workspace
+            layout_root_path (Path, optional):
+                Path to the root of the layout directory. Defaults to Path.cwd().
+
+        Returns:
+            None
+        """
+        declarative_filter_views = CatalogDeclarativeFilterView.load_filter_views_from_disk(
+            self.layout_organization_folder(layout_root_path)
+        )
+        self.put_declarative_filter_views(workspace_id, declarative_filter_views)

@@ -105,10 +105,11 @@ class JsonApiWorkspaceInAttributes(ModelNormal):
         return {
             'cache_extra_limit': (int,),  # noqa: E501
             'data_source': (JsonApiWorkspaceInAttributesDataSource,),  # noqa: E501
-            'description': (str,),  # noqa: E501
-            'early_access': (str,),  # noqa: E501
-            'name': (str,),  # noqa: E501
-            'prefix': (str,),  # noqa: E501
+            'description': (str, none_type,),  # noqa: E501
+            'early_access': (str, none_type,),  # noqa: E501
+            'early_access_values': ([str], none_type,),  # noqa: E501
+            'name': (str, none_type,),  # noqa: E501
+            'prefix': (str, none_type,),  # noqa: E501
         }
 
     @cached_property
@@ -121,6 +122,7 @@ class JsonApiWorkspaceInAttributes(ModelNormal):
         'data_source': 'dataSource',  # noqa: E501
         'description': 'description',  # noqa: E501
         'early_access': 'earlyAccess',  # noqa: E501
+        'early_access_values': 'earlyAccessValues',  # noqa: E501
         'name': 'name',  # noqa: E501
         'prefix': 'prefix',  # noqa: E501
     }
@@ -168,10 +170,11 @@ class JsonApiWorkspaceInAttributes(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             cache_extra_limit (int): [optional]  # noqa: E501
             data_source (JsonApiWorkspaceInAttributesDataSource): [optional]  # noqa: E501
-            description (str): [optional]  # noqa: E501
-            early_access (str): [optional]  # noqa: E501
-            name (str): [optional]  # noqa: E501
-            prefix (str): Custom prefix of entity identifiers in workspace. [optional]  # noqa: E501
+            description (str, none_type): [optional]  # noqa: E501
+            early_access (str, none_type): The early access feature identifier. It is used to enable experimental features. Deprecated in favor of earlyAccessValues.. [optional]  # noqa: E501
+            early_access_values ([str], none_type): The early access feature identifiers. They are used to enable experimental features.. [optional]  # noqa: E501
+            name (str, none_type): [optional]  # noqa: E501
+            prefix (str, none_type): Custom prefix of entity identifiers in workspace. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -259,10 +262,11 @@ class JsonApiWorkspaceInAttributes(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             cache_extra_limit (int): [optional]  # noqa: E501
             data_source (JsonApiWorkspaceInAttributesDataSource): [optional]  # noqa: E501
-            description (str): [optional]  # noqa: E501
-            early_access (str): [optional]  # noqa: E501
-            name (str): [optional]  # noqa: E501
-            prefix (str): Custom prefix of entity identifiers in workspace. [optional]  # noqa: E501
+            description (str, none_type): [optional]  # noqa: E501
+            early_access (str, none_type): The early access feature identifier. It is used to enable experimental features. Deprecated in favor of earlyAccessValues.. [optional]  # noqa: E501
+            early_access_values ([str], none_type): The early access feature identifiers. They are used to enable experimental features.. [optional]  # noqa: E501
+            name (str, none_type): [optional]  # noqa: E501
+            prefix (str, none_type): Custom prefix of entity identifiers in workspace. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)

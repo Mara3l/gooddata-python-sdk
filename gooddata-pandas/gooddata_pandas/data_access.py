@@ -6,7 +6,7 @@ from typing import Any, Optional, Union
 from gooddata_sdk import (
     Attribute,
     AttributeFilter,
-    CatalogWorkspaceContent,
+    CatalogAttribute,
     ExecutionDefinition,
     ExecutionResponse,
     Filter,
@@ -16,6 +16,7 @@ from gooddata_sdk import (
     ObjId,
     TableDimension,
 )
+from gooddata_sdk.utils import IdObjType
 
 from gooddata_pandas.utils import (
     ColumnsDef,
@@ -25,6 +26,7 @@ from gooddata_pandas.utils import (
     _to_attribute,
     _to_item,
     _typed_attribute_value,
+    get_catalog_attributes_for_extract,
 )
 
 
@@ -119,10 +121,7 @@ class ExecutionDefinitionBuilder:
         if index_by is None:
             return
 
-        if not isinstance(index_by, dict):
-            _index_by = {self._DEFAULT_INDEX_NAME: index_by}
-        else:
-            _index_by = index_by
+        _index_by = {self._DEFAULT_INDEX_NAME: index_by} if not isinstance(index_by, dict) else index_by
 
         for index_name, index_def in _index_by.items():
             if isinstance(index_def, str) and (index_def in self._col_to_attr_idx):
@@ -208,11 +207,14 @@ class ExecutionDefinitionBuilder:
                         raise ValueError(f"AttributeFilter instance referencing metric [{_filter.label}]")
                     else:
                         _filter.label = _str_to_obj_id(_filter.label) or _filter.label
-                elif isinstance(_filter, MetricValueFilter) and isinstance(_filter.metric, str):
-                    if _filter.metric in self._col_to_metric_idx:
-                        # Metric is referenced by local_id which was already generated during creation of columns
-                        # When Metric filter contains ObjId reference, it does not need to be modified
-                        _filter.metric = self._metrics[self._col_to_metric_idx[_filter.metric]].local_id
+                elif (
+                    isinstance(_filter, MetricValueFilter)
+                    and isinstance(_filter.metric, str)
+                    and _filter.metric in self._col_to_metric_idx
+                ):
+                    # Metric is referenced by local_id which was already generated during creation of columns
+                    # When Metric filter contains ObjId reference, it does not need to be modified
+                    _filter.metric = self._metrics[self._col_to_metric_idx[_filter.metric]].local_id
 
         return filters
 
@@ -311,27 +313,32 @@ def _extract_for_metrics_only(response: ExecutionResponse, cols: list, col_to_me
     """
     exec_def = response.exec_def
     result = response.read_result(len(exec_def.metrics))
-    data = dict()
+    if len(result.data) == 0:
+        return {col: [] for col in cols}
 
-    for col in cols:
-        data[col] = [result.data[col_to_metric_idx[col]]]
-
-    return data
+    return {col: [result.data[col_to_metric_idx[col]]] for col in cols}
 
 
-def _typed_result(catalog: CatalogWorkspaceContent, attribute: Attribute, result_values: list[Any]) -> list[Any]:
+def _find_attribute(attributes: list[CatalogAttribute], id_obj: IdObjType) -> Union[CatalogAttribute, None]:
+    for attribute in attributes:
+        if attribute.find_label(id_obj) is not None:
+            return attribute
+    return None
+
+
+def _typed_result(attributes: list[CatalogAttribute], attribute: Attribute, result_values: list[Any]) -> list[Any]:
     """
     Internal function to convert result_values to proper data types.
 
     Args:
-        catalog (CatalogWorkspaceContent): The catalog workspace content.
+        attributes (list[CatalogAttribute]): The catalog of attributes.
         attribute (Attribute): The attribute for which the typed result will be computed.
         result_values (list[Any]): A list of raw values.
 
     Returns:
         list[Any]: A list of converted values with proper data types.
     """
-    catalog_attribute = catalog.find_label_attribute(attribute.label)
+    catalog_attribute = _find_attribute(attributes, attribute.label)
     if catalog_attribute is None:
         raise ValueError(f"Unable to find attribute {attribute.label} in catalog")
     return [_typed_attribute_value(catalog_attribute, value) for value in result_values]
@@ -339,7 +346,7 @@ def _typed_result(catalog: CatalogWorkspaceContent, attribute: Attribute, result
 
 def _extract_from_attributes_and_maybe_metrics(
     response: ExecutionResponse,
-    catalog: CatalogWorkspaceContent,
+    attributes: list[CatalogAttribute],
     cols: list[str],
     col_to_attr_idx: dict[str, int],
     col_to_metric_idx: dict[str, int],
@@ -351,7 +358,7 @@ def _extract_from_attributes_and_maybe_metrics(
 
     Args:
         response (ExecutionResponse): The execution response to extract data from.
-        catalog (CatalogWorkspaceContent): The catalog workspace content.
+        attributes (list[CatalogAttribute]): The catalog of attributes.
         cols (list[str]): A list of column names.
         col_to_attr_idx (dict[str, int]): A mapping of pandas column names to attribute dimension indices.
         col_to_metric_idx (dict[str, int]): A mapping of pandas column names to metric dimension indices.
@@ -382,12 +389,12 @@ def _extract_from_attributes_and_maybe_metrics(
         for idx_name in index:
             rs = result.get_all_header_values(attribute_dim, safe_index_to_attr_idx[idx_name])
             attribute = index_to_attribute[idx_name]
-            index[idx_name] += _typed_result(catalog, attribute, rs)
+            index[idx_name] += _typed_result(attributes, attribute, rs)
         for col in cols:
             if col in col_to_attr_idx:
                 rs = result.get_all_header_values(attribute_dim, col_to_attr_idx[col])
                 attribute = col_to_attribute[col]
-                data[col] += _typed_result(catalog, attribute, rs)
+                data[col] += _typed_result(attributes, attribute, rs)
             elif col_to_metric_idx[col] < len(result.data):
                 data[col] += result.data[col_to_metric_idx[col]]
         if result.is_complete(attribute_dim):
@@ -437,14 +444,13 @@ def compute_and_extract(
     exec_def = response.exec_def
     cols = list(columns.keys())
 
-    catalog = sdk.catalog_workspace_content.get_full_catalog(workspace_id)
-
     if not exec_def.has_attributes():
         return _extract_for_metrics_only(response, cols, col_to_metric_idx), dict()
     else:
+        attributes = get_catalog_attributes_for_extract(sdk, workspace_id, exec_def.attributes)
         return _extract_from_attributes_and_maybe_metrics(
             response,
-            catalog,
+            attributes,
             cols,
             col_to_attr_idx,
             col_to_metric_idx,

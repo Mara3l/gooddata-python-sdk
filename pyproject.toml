@@ -14,15 +14,24 @@ lint.select = [
     "E", # pycodestyle errors
     "F", # pyflakes
     "I", # isort
-    "PERF102", # perflint
+    "PERF", # perflint
     "PIE",
     "PLR0402", # prevent unnecessary manual import aliases
     "PLR1711", # prevent useless returns
-    "SIM2", # simplify boolean expressions
-    "SIM4", # simplify if statements
-    "SIM9", # simplify dict values
-    "W" # pycodestyle warnings
+    "SIM",
+    "UP",
+    "W", # pycodestyle warnings
+    "D417", # undocumented-param
 ]
+lint.ignore = [
+    # rules recommended to be ignored when using ruff format
+    "E501", "W191",
+    # ignore the rule banning Optional[X] in favor of X | None, we are fine with Optional for now
+    "UP007",
+    # ignore the rule, because it presents non-zero perf cost
+    "SIM105",
+]
+target-version = "py39"
 
 [tool.ruff.lint.per-file-ignores]
 "gooddata-pandas/gooddata_pandas/__init__.py" = ["F401"]
@@ -30,17 +39,23 @@ lint.select = [
 "gooddata-sdk/gooddata_sdk/__init__.py" = ["F401"]
 "gooddata-dbt/gooddata_dbt/__init__.py" = ["F401"]
 "gooddata-fdw/gooddata_fdw/__init__.py" = ["F401"]
+"gooddata-flight-server/gooddata_flight_server/__init__.py" = ["F401"]
+"gooddata-flexconnect/gooddata_flexconnect/__init__.py" = ["F401"]
 
 [tool.ruff.format]
 exclude = ['(gooddata-api-client|.*\.snapshot\..*)']
+# use ruff to format code examples in docstrings as well
+docstring-code-format = true
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.tbump]
 # Uncomment this if your project is hosted on GitHub:
 # github_url = "https://github.com/<user or organization>/<project>/"
 
 [tool.tbump.version]
-current = "1.18.1"
+current = "1.42.0"
 regex = '''
   (?P<major>\d+)
   \.
@@ -106,6 +121,26 @@ src = "gooddata-dbt/setup.py"
 search = "gooddata-sdk~={current_version}"
 
 [[tool.tbump.file]]
+# gooddata-flight-server setup.py
+src = "gooddata-flight-server/setup.py"
+search = "version=\"{current_version}\""
+
+[[tool.tbump.file]]
+# gooddata-flexconnect setup.py
+src = "gooddata-flexconnect/setup.py"
+search = "version=\"{current_version}\""
+
+[[tool.tbump.file]]
+# gooddata-flexconnect setup.py dependency
+src = "gooddata-flexconnect/setup.py"
+search = "gooddata-sdk~={current_version}"
+
+[[tool.tbump.file]]
+# gooddata-flexconnect setup.py dependency
+src = "gooddata-flexconnect/setup.py"
+search = "gooddata-flight-server~={current_version}"
+
+[[tool.tbump.file]]
 # clients README
 src = "gooddata-*-client/README.md"
 
@@ -140,6 +175,14 @@ search = '"Documentation": "https://gooddata-pandas.readthedocs.io/en/v{current_
 [[tool.tbump.file]]
 src = "gooddata-fdw/setup.py"
 search = '"Documentation": "https://gooddata-fdw.readthedocs.io/en/v{current_version}"'
+
+[[tool.tbump.file]]
+src = "gooddata-flight-server/setup.py"
+search = '"Documentation": "https://gooddata-flight-server.readthedocs.io/en/v{current_version}"'
+
+[[tool.tbump.file]]
+src = "gooddata-flexconnect/setup.py"
+search = '"Documentation": "https://gooddata-flexconnect.readthedocs.io/en/v{current_version}"'
 
 # You can specify a list of commands to
 # run after the files have been patched

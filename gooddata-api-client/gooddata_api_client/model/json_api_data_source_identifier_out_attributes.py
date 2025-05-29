@@ -76,6 +76,11 @@ class JsonApiDataSourceIdentifierOutAttributes(ModelNormal):
             'MYSQL': "MYSQL",
             'MARIADB': "MARIADB",
             'ORACLE': "ORACLE",
+            'SINGLESTORE': "SINGLESTORE",
+            'MOTHERDUCK': "MOTHERDUCK",
+            'FLEXCONNECT': "FLEXCONNECT",
+            'STARROCKS': "STARROCKS",
+            'ATHENA': "ATHENA",
         },
     }
 

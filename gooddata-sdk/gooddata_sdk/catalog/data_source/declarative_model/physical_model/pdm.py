@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Type
 
 import attr
 from gooddata_api_client.model.declarative_tables import DeclarativeTables
@@ -20,10 +19,10 @@ def get_pdm_folder(data_source_folder: Path) -> Path:
 
 @attr.s(auto_attribs=True, kw_only=True)
 class CatalogDeclarativeTables(Base):
-    tables: List[CatalogDeclarativeTable] = attr.field(factory=list)
+    tables: list[CatalogDeclarativeTable] = attr.field(factory=list)
 
     @staticmethod
-    def client_class() -> Type[DeclarativeTables]:
+    def client_class() -> type[DeclarativeTables]:
         return DeclarativeTables
 
     def store_to_disk(self, data_source_folder: Path) -> None:
@@ -36,9 +35,7 @@ class CatalogDeclarativeTables(Base):
     def load_from_disk(cls, data_source_folder: Path) -> CatalogDeclarativeTables:
         pdm_folder = get_pdm_folder(data_source_folder)
         table_files = sorted([p for p in pdm_folder.glob("*.yaml")])
-        tables = []
-        for table_file in table_files:
-            tables.append(CatalogDeclarativeTable.load_from_disk(table_file))
+        tables = [CatalogDeclarativeTable.load_from_disk(table_file) for table_file in table_files]
         return cls(tables=tables)
 
 
@@ -46,4 +43,4 @@ class CatalogDeclarativeTables(Base):
 class CatalogScanResultPdm(Base):
     pdm: CatalogDeclarativeTables = CatalogDeclarativeTables()
     # Just informative hints. Create appropriate classes later if needed.
-    warnings: List[Dict] = attr.field(factory=list)
+    warnings: list[dict] = attr.field(factory=list)

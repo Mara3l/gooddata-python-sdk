@@ -66,6 +66,9 @@ class WorkspacePermissionAssignment(ModelNormal):
             'EXPORT': "EXPORT",
             'EXPORT_TABULAR': "EXPORT_TABULAR",
             'EXPORT_PDF': "EXPORT_PDF",
+            'CREATE_AUTOMATION': "CREATE_AUTOMATION",
+            'USE_AI_ASSISTANT': "USE_AI_ASSISTANT",
+            'CREATE_FILTER_VIEW': "CREATE_FILTER_VIEW",
             'VIEW': "VIEW",
         },
         ('permissions',): {
@@ -74,6 +77,9 @@ class WorkspacePermissionAssignment(ModelNormal):
             'EXPORT': "EXPORT",
             'EXPORT_TABULAR': "EXPORT_TABULAR",
             'EXPORT_PDF': "EXPORT_PDF",
+            'CREATE_AUTOMATION': "CREATE_AUTOMATION",
+            'USE_AI_ASSISTANT': "USE_AI_ASSISTANT",
+            'CREATE_FILTER_VIEW': "CREATE_FILTER_VIEW",
             'VIEW': "VIEW",
         },
     }

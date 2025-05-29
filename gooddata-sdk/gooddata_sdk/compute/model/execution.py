@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from attr.setters import frozen as frozen_attr
 from attrs import define, field
 from gooddata_api_client import models
 from gooddata_api_client.model.afm import AFM
+from gooddata_api_client.model.afm_cancel_tokens import AfmCancelTokens
 from gooddata_api_client.model.result_spec import ResultSpec
 
 from gooddata_sdk.client import GoodDataApiClient
@@ -33,7 +34,7 @@ class TotalDefinition:
     """total's local identifier"""
 
     aggregation: str
-    """aggregation function; case insensitive; one of SUM, MIN, MAX, MED, AVG"""
+    """aggregation function; case insensitive; one of SUM, MIN, MAX, MED, AVG, NAT"""
 
     metric_local_id: str
     """local identifier of the measure to calculate total for"""
@@ -45,10 +46,10 @@ class TotalDefinition:
 class TableDimension:
     """Dataclass used during total and dimension computation."""
 
-    item_ids: Optional[List[str]] = field(on_setattr=frozen_attr)
+    item_ids: Optional[list[str]] = field(on_setattr=frozen_attr)
     """table dimension item local identifiers"""
 
-    sorting: List[dict] = field(default=[])
+    sorting: list[dict] = field(default=[])
     """sorting defined for the given table dimension"""
 
 
@@ -60,12 +61,14 @@ class ExecutionDefinition:
         filters: Optional[list[Filter]],
         dimensions: list[TableDimension],
         totals: Optional[list[TotalDefinition]] = None,
+        is_cancellable: bool = False,
     ) -> None:
         self._attributes = attributes or []
         self._metrics = metrics or []
         self._filters = filters or []
         self._dimensions = [dim for dim in dimensions if dim.item_ids is not None]
         self._totals = totals
+        self._is_cancellable = is_cancellable
 
     @property
     def attributes(self) -> list[Attribute]:
@@ -97,6 +100,10 @@ class ExecutionDefinition:
 
     def is_two_dim(self) -> bool:
         return len(self.dimensions) == 2
+
+    @property
+    def is_cancellable(self) -> bool:
+        return self._is_cancellable
 
     def _create_value_sort_key(self, sort_key: dict) -> models.SortKey:
         sort_key_value = sort_key["value"]
@@ -198,7 +205,7 @@ class ExecutionDefinition:
         return models.AfmExecution(execution=execution, result_spec=result_spec)
 
 
-ResultSizeDimensions = Tuple[Optional[int], ...]
+ResultSizeDimensions = tuple[Optional[int], ...]
 
 
 class ResultSizeDimensionsLimitsExceeded(Exception):
@@ -219,6 +226,7 @@ class ExecutionResult:
         self._headers: list[models.DimensionHeader] = result["dimension_headers"]
         self._grand_totals: list[models.ExecutionResultGrandTotal] = result["grand_totals"]
         self._paging: models.ExecutionResultPaging = result["paging"]
+        self._metadata: models.ExecutionResultMetadata = result["metadata"]
 
     @property
     def data(self) -> list[Any]:
@@ -247,6 +255,10 @@ class ExecutionResult:
     @property
     def paging_offset(self) -> list[int]:
         return self._paging["offset"]
+
+    @property
+    def metadata(self) -> models.ExecutionResultMetadata:
+        return self._metadata
 
     def is_complete(self, dim: int = 0) -> bool:
         return self.paging_offset[dim] + self.paging_count[dim] >= self.paging_total[dim]
@@ -296,6 +308,7 @@ class BareExecutionResponse:
         api_client: GoodDataApiClient,
         workspace_id: str,
         execution_response: models.AfmExecutionResponse,
+        cancel_token: Optional[str] = None,
     ):
         self._api_client = api_client
         self._actions_api = self._api_client.actions_api
@@ -303,6 +316,7 @@ class BareExecutionResponse:
 
         self._exec_response: models.ExecutionResponse = execution_response["execution_response"]
         self._afm_exec_response = execution_response
+        self._cancel_token = cancel_token
 
     @property
     def workspace_id(self) -> str:
@@ -315,6 +329,10 @@ class BareExecutionResponse:
     @property
     def dimensions(self) -> Any:
         return self._exec_response["dimensions"]
+
+    @property
+    def cancel_token(self) -> Optional[str]:
+        return self._cancel_token
 
     def read_result(self, limit: Union[int, list[int]], offset: Union[None, int, list[int]] = None) -> ExecutionResult:
         """
@@ -335,6 +353,7 @@ class BareExecutionResponse:
             limit=_limit,
             _check_return_type=False,
             _return_http_data_only=False,
+            **({"x_gdc_cancel_token": self.cancel_token} if self.cancel_token else {}),
         )
         custom_headers = self._api_client.custom_headers
         if "X-GDC-TRACE-ID" in custom_headers and "X-GDC-TRACE-ID" in http_headers:
@@ -347,11 +366,21 @@ class BareExecutionResponse:
             )
         return ExecutionResult(execution_result)
 
+    def cancel(self) -> None:
+        """
+        Cancels the execution backing this execution result.
+        """
+        if self.cancel_token is not None:
+            self._api_client.actions_api.cancel_executions(
+                self._workspace_id,
+                AfmCancelTokens({self.result_id: self.cancel_token}),
+            )
+
     def __str__(self) -> str:
         return self.__repr__()
 
     def __repr__(self) -> str:
-        return f"BareExecutionResponse(workspace_id={self.workspace_id}, result_id={self.result_id})"
+        return f"BareExecutionResponse(workspace_id={self.workspace_id}, result_id={self.result_id}, cancel_token={self.cancel_token})"
 
 
 class Execution:
@@ -367,12 +396,11 @@ class Execution:
         workspace_id: str,
         exec_def: ExecutionDefinition,
         response: models.AfmExecutionResponse,
+        cancel_token: Optional[str] = None,
     ):
         self._exec_def = exec_def
         self._bare_exec_response = BareExecutionResponse(
-            api_client=api_client,
-            workspace_id=workspace_id,
-            execution_response=response,
+            api_client=api_client, workspace_id=workspace_id, execution_response=response, cancel_token=cancel_token
         )
 
     @property
@@ -394,6 +422,10 @@ class Execution:
     @property
     def dimensions(self) -> Any:
         return self.bare_exec_response._exec_response["dimensions"]
+
+    @property
+    def cancel_token(self) -> Optional[str]:
+        return self.bare_exec_response.cancel_token
 
     def get_labels_and_formats(self) -> tuple[dict[str, str], dict[str, str]]:
         """
@@ -421,11 +453,19 @@ class Execution:
     def read_result(self, limit: Union[int, list[int]], offset: Union[None, int, list[int]] = None) -> ExecutionResult:
         return self.bare_exec_response.read_result(limit, offset)
 
+    def cancel(self) -> None:
+        """
+        Cancels the execution.
+        """
+        self.bare_exec_response.cancel()
+
     def __str__(self) -> str:
         return self.__repr__()
 
     def __repr__(self) -> str:
-        return f"Execution(workspace_id={self.workspace_id}, result_id={self.bare_exec_response.result_id})"
+        return (
+            f"Execution(workspace_id={self.workspace_id}, result_id={self.result_id}, cancel_token={self.cancel_token})"
+        )
 
 
 # Originally ExecutionResponse contained also ExecutionDefinition which was not correct, therefore Execution class was

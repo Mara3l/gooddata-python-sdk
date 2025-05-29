@@ -1,8 +1,7 @@
 # (C) 2021 GoodData Corporation
 from __future__ import annotations
 
-from typing import Optional, Tuple, Union
-from warnings import warn
+from typing import Optional, Union
 
 import pandas
 from gooddata_api_client import models
@@ -184,14 +183,20 @@ class DataFrameFactory:
 
         return self.for_items(columns, filter_by=filter_by, auto_index=auto_index)
 
-    def for_insight(self, insight_id: str, auto_index: bool = True) -> pandas.DataFrame:
-        warn(
-            "This method is deprecated and it will be removed in v1.20.0 release. "
-            "Please use 'for_visualization' method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.for_visualization(insight_id, auto_index)
+    def for_created_visualization(
+        self, created_visualizations_response: dict
+    ) -> tuple[pandas.DataFrame, DataFrameMetadata]:
+        """
+        Creates a data frame using a created visualization.
+
+        Args:
+            created_visualizations_response (dict): Created visualization response.
+
+        Returns:
+            pandas.DataFrame: A DataFrame instance.
+        """
+        execution_definition = self._sdk.compute.build_exec_def_from_chat_result(created_visualizations_response)
+        return self.for_exec_def(exec_def=execution_definition)
 
     def result_cache_metadata_for_exec_result_id(self, result_id: str) -> ResultCacheMetadata:
         """
@@ -212,7 +217,7 @@ class DataFrameFactory:
         result_size_dimensions_limits: ResultSizeDimensions = (),
         result_size_bytes_limit: Optional[int] = None,
         page_size: int = _DEFAULT_PAGE_SIZE,
-    ) -> Tuple[pandas.DataFrame, DataFrameMetadata]:
+    ) -> tuple[pandas.DataFrame, DataFrameMetadata]:
         """
         Creates a data frame using an execution definition.
 
@@ -271,7 +276,7 @@ class DataFrameFactory:
         use_local_ids_in_headers: bool = False,
         use_primary_labels_in_attributes: bool = False,
         page_size: int = _DEFAULT_PAGE_SIZE,
-    ) -> Tuple[pandas.DataFrame, DataFrameMetadata]:
+    ) -> tuple[pandas.DataFrame, DataFrameMetadata]:
         """
             Retrieves a DataFrame and DataFrame metadata for a given execution result identifier.
 

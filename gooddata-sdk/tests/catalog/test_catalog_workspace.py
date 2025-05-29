@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import List
+from xml.etree import ElementTree as ET
 
 import yaml
 from gooddata_sdk import (
     BasicCredentials,
+    CatalogAutomationSchedule,
     CatalogDataSourcePostgres,
+    CatalogDeclarativeAutomation,
+    CatalogDeclarativeFilterView,
     CatalogDeclarativeUserDataFilter,
     CatalogDeclarativeUserDataFilters,
     CatalogDeclarativeWorkspaceDataFilters,
@@ -21,7 +24,15 @@ from gooddata_sdk import (
     GoodDataSdk,
     PostgresAttributes,
 )
-from gooddata_sdk.catalog.identifier import CatalogUserIdentifier
+from gooddata_sdk.catalog.identifier import (
+    CatalogDeclarativeAnalyticalDashboardIdentifier,
+    CatalogNotificationChannelIdentifier,
+    CatalogUserIdentifier,
+)
+from gooddata_sdk.catalog.organization.layout.notification_channel import (
+    CatalogDeclarativeNotificationChannel,
+    CatalogWebhook,
+)
 from gooddata_sdk.utils import recreate_directory
 from tests_support.vcrpy_utils import get_vcr
 
@@ -661,7 +672,6 @@ def create_second_data_source(sdk: GoodDataSdk, ds_id: str) -> None:
                 username="demouser",
                 password="demopass",
             ),
-            enable_caching=False,
             url_params=[("autosave", "false")],
         )
     )
@@ -709,7 +719,7 @@ def test_clone_workspace(test_config):
         delete_data_source(sdk, test_config["data_source2"])
 
 
-def _translate_batch(to_translate: List[str]) -> List[str]:
+def _translate_batch(to_translate: list[str]) -> list[str]:
     return [("Rozpočet" if x == "Budget" else x) for x in to_translate]
 
 
@@ -840,3 +850,184 @@ def test_update_workspace_setting(test_config):
     finally:
         sdk.catalog_workspace.delete_workspace_setting(test_config["workspace"], setting_id)
         assert len(sdk.catalog_workspace.list_workspace_settings(test_config["workspace"])) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "get_metadata_localization.yaml"))
+def test_get_metadata_localization(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+    xliff = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    tree = ET.ElementTree(ET.fromstring(xliff))
+
+    # Check, if the returned xliff is valid.
+    assert tree is not None
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "set_metadata_localization.yaml"))
+def test_set_metadata_localization(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+    xliff = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.set_metadata_localization(workspace_id=test_workspace, encoded_xml=xliff)
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "add_metadata_locale.yaml"))
+def test_add_metadata_locale(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+
+    def translate(
+        to_translate: str,
+        already_translated: bool = False,
+        old_translation: str = "",
+    ):
+        return f"{to_translate}."
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    xliff_before = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.add_metadata_locale(
+        workspace_id=test_workspace, target_language="fr-FR", translator_func=translate, set_locale=False
+    )
+
+    xliff_after = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    assert xliff_before != xliff_after
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "clean_metadata_locale.yaml"))
+def test_clean_metadata_locale(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    test_workspace = test_config["workspace"]
+
+    def translate(
+        to_translate: str,
+        already_translated: bool = False,
+        old_translation: str = "",
+    ):
+        return f"{to_translate}."
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    xliff_before = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    sdk.catalog_workspace.add_metadata_locale(
+        workspace_id=test_workspace, target_language="fr-FR", translator_func=translate, set_locale=False
+    )
+
+    xliff_after = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    assert xliff_before != xliff_after
+
+    sdk.catalog_workspace.clean_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    xliff_after = sdk.catalog_workspace.get_metadata_localization(workspace_id=test_workspace, target_language="fr-FR")
+
+    assert xliff_before == xliff_after
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "layout_automations.yaml"))
+def test_layout_automations(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    workspace_id = test_config["workspace"]
+
+    automations = sdk.catalog_workspace.get_declarative_automations(workspace_id)
+    assert len(automations) == 0
+
+    try:
+        notification_channel = [
+            CatalogDeclarativeNotificationChannel(
+                id="webhook", name="Webhook", destination=CatalogWebhook(url="https://webhook.site", token="123")
+            ),
+        ]
+        sdk.catalog_organization.put_declarative_notification_channels(notification_channel)
+        automations_expected = [
+            CatalogDeclarativeAutomation(
+                id="automation",
+                title="Automation",
+                state="ACTIVE",
+                notification_channel=CatalogNotificationChannelIdentifier(id="webhook"),
+                schedule=CatalogAutomationSchedule(cron="0 0 * * *", first_run="2023-10-05 14:30:00+00:00"),
+                metadata={"key": "value"},
+            )
+        ]
+        sdk.catalog_workspace.put_declarative_automations(workspace_id, automations_expected)
+        automations_o = sdk.catalog_workspace.get_declarative_automations(workspace_id)
+        assert automations_expected == automations_o
+    finally:
+        sdk.catalog_workspace.put_declarative_automations(workspace_id, [])
+        automations = sdk.catalog_workspace.get_declarative_automations(workspace_id)
+        assert len(automations) == 0
+        sdk.catalog_organization.put_declarative_notification_channels([])
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "layout_filter_views.yaml"))
+def test_layout_filter_views(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    workspace_id = test_config["workspace"]
+
+    filter_views = sdk.catalog_workspace.get_declarative_filter_views(workspace_id)
+    assert len(filter_views) == 0
+
+    content = json.loads(
+        """
+        {
+            "filters": [
+                {
+                  "dateFilter": {
+                    "from": "0",
+                    "to": "0",
+                    "granularity": "GDC.time.month",
+                    "type": "relative"
+                  }
+                },
+                {
+                  "attributeFilter": {
+                    "displayForm": {
+                      "identifier": {
+                        "id": "demo:campaign_name",
+                        "type": "label"
+                      }
+                    },
+                    "negativeSelection": true,
+                    "attributeElements": {
+                      "uris": []
+                    },
+                    "localIdentifier": "14b0807447ef4bc28f43e4fc5c337d1d",
+                    "filterElementsBy": [],
+                    "selectionMode": "multi"
+                  }
+                }
+            ],
+            "version": "2"
+        }
+        """
+    )
+
+    try:
+        filter_views_expected = [
+            CatalogDeclarativeFilterView(
+                id="filter_view",
+                title="Filter View",
+                is_default=True,
+                description="Filter View",
+                tags=["tag1", "tag2"],
+                user=CatalogUserIdentifier(id="demo", type="user"),
+                analytical_dashboard=CatalogDeclarativeAnalyticalDashboardIdentifier(
+                    id="campaign", type="analyticalDashboard"
+                ),
+                content=content,
+            )
+        ]
+        sdk.catalog_workspace.put_declarative_filter_views(workspace_id, filter_views_expected)
+        filter_views_o = sdk.catalog_workspace.get_declarative_filter_views(workspace_id)
+        assert filter_views_expected == filter_views_o
+    finally:
+        sdk.catalog_workspace.put_declarative_filter_views(workspace_id, [])
+        filter_views = sdk.catalog_workspace.get_declarative_filter_views(workspace_id)
+        assert len(filter_views) == 0

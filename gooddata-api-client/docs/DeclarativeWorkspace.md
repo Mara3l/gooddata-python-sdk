@@ -7,11 +7,14 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **str** | Identifier of a workspace | 
 **name** | **str** | Name of a workspace to view. | 
+**automations** | [**[DeclarativeAutomation]**](DeclarativeAutomation.md) |  | [optional] 
 **cache_extra_limit** | **int** | Extra cache limit allocated to specific workspace. In case there is extra cache budget setup for organization, it can be split between multiple workspaces. | [optional] 
 **custom_application_settings** | [**[DeclarativeCustomApplicationSetting]**](DeclarativeCustomApplicationSetting.md) | A list of workspace custom settings. | [optional] 
 **data_source** | [**WorkspaceDataSource**](WorkspaceDataSource.md) |  | [optional] 
 **description** | **str** | Description of the workspace | [optional] 
 **early_access** | **str** | Early access defined on level Workspace | [optional] 
+**early_access_values** | **[str]** | Early access defined on level Workspace | [optional] 
+**filter_views** | [**[DeclarativeFilterView]**](DeclarativeFilterView.md) |  | [optional] 
 **hierarchy_permissions** | [**[DeclarativeWorkspaceHierarchyPermission]**](DeclarativeWorkspaceHierarchyPermission.md) |  | [optional] 
 **model** | [**DeclarativeWorkspaceModel**](DeclarativeWorkspaceModel.md) |  | [optional] 
 **parent** | [**WorkspaceIdentifier**](WorkspaceIdentifier.md) |  | [optional] 

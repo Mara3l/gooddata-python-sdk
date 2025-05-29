@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import functools
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional, Union
 
 from gooddata_api_client.exceptions import NotFoundException
 
@@ -17,6 +17,7 @@ from gooddata_sdk.catalog.data_source.action_model.requests.scan_sql_request imp
 from gooddata_sdk.catalog.data_source.action_model.responses.scan_sql_response import ScanSqlResponse
 from gooddata_sdk.catalog.data_source.declarative_model.data_source import (
     BIGQUERY_TYPE,
+    DATABRICKS_TYPE,
     CatalogDeclarativeDataSource,
     CatalogDeclarativeDataSources,
 )
@@ -24,12 +25,11 @@ from gooddata_sdk.catalog.data_source.declarative_model.physical_model.pdm impor
     CatalogDeclarativeTables,
     CatalogScanResultPdm,
 )
-from gooddata_sdk.catalog.data_source.entity_model.content_objects.table import CatalogDataSourceTable
 from gooddata_sdk.catalog.data_source.entity_model.data_source import CatalogDataSource
-from gooddata_sdk.catalog.entity import TokenCredentialsFromFile
+from gooddata_sdk.catalog.entity import ClientSecretCredentialsFromFile, TokenCredentialsFromFile
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.logical_model.ldm import CatalogDeclarativeModel
 from gooddata_sdk.client import GoodDataApiClient
-from gooddata_sdk.utils import load_all_entities_dict, read_layout_from_file
+from gooddata_sdk.utils import get_ds_credentials, load_all_entities_dict, read_layout_from_file
 
 _PDM_DEPRECATION_MSG = "This method is going to be deprecated due to PDM removal."
 
@@ -42,7 +42,7 @@ class CatalogDataSourceService(CatalogServiceBase):
     """
 
     def __init__(self, api_client: GoodDataApiClient) -> None:
-        super(CatalogDataSourceService, self).__init__(api_client)
+        super().__init__(api_client)
 
     # Entities methods are listed below
 
@@ -119,14 +119,14 @@ class CatalogDataSourceService(CatalogServiceBase):
             data_source_id, CatalogDataSource.to_api_patch(data_source_id, attributes)
         )
 
-    def list_data_sources(self) -> List[CatalogDataSource]:
+    def list_data_sources(self) -> list[CatalogDataSource]:
         """Lists all data sources.
 
         Args:
             None
 
         Returns:
-            List[CatalogDataSource]:
+            list[CatalogDataSource]:
                 List of all Data Sources in the whole organization.
         """
         get_data_sources = functools.partial(
@@ -136,29 +136,10 @@ class CatalogDataSourceService(CatalogServiceBase):
         data_sources = load_all_entities_dict(get_data_sources)
         return [CatalogDataSource.from_api(ds) for ds in data_sources["data"]]
 
-    def list_data_source_tables(self, data_source_id: str) -> List[CatalogDataSourceTable]:
-        """Lists all the data source tables for a given data source.
-
-        Args:
-            data_source_id (str):
-                Data Source identification string. e.g. "demo"
-
-        Returns:
-            List[CatalogDataSourceTable]:
-                List of Data Source Table objects
-        """
-        get_data_source_tables = functools.partial(
-            self._entities_api.get_all_entities_data_source_tables,
-            data_source_id,
-            _check_return_type=False,
-        )
-        data_source_tables = load_all_entities_dict(get_data_source_tables, camel_case=False)
-        return [CatalogDataSourceTable.from_dict(dst, camel_case=False) for dst in data_source_tables["data"]]
-
     # Declarative methods are listed below
 
     def get_declarative_data_sources(self) -> CatalogDeclarativeDataSources:
-        """Retrieve all data sources, including their related physical data model.
+        """Retrieve all data sources.
 
         Args:
             None
@@ -173,6 +154,7 @@ class CatalogDataSourceService(CatalogServiceBase):
         self,
         declarative_data_sources: CatalogDeclarativeDataSources,
         credentials_path: Optional[Path] = None,
+        config_file: Optional[Union[str, Path]] = None,
         test_data_sources: bool = False,
     ) -> None:
         """Set all data sources, including their related physical data model.
@@ -182,6 +164,8 @@ class CatalogDataSourceService(CatalogServiceBase):
                 Declarative Data Source object. Can be retrieved by get_declarative_data_sources.
             credentials_path (Optional[Path], optional):
                 Path to the Credentials. Optional, defaults to None.
+            config_file (Optional[Union[str, Path]], optional):
+                Path to the config file. Defaults to None.
             test_data_sources (bool, optional):
                 If True, the connection of data sources is tested. Defaults to False.
 
@@ -189,9 +173,11 @@ class CatalogDataSourceService(CatalogServiceBase):
             None
         """
         if test_data_sources:
-            self.test_data_sources_connection(declarative_data_sources, credentials_path)
-        credentials = self._credentials_from_file(credentials_path) if credentials_path is not None else dict()
-        self._layout_api.put_data_sources_layout(declarative_data_sources.to_api(credentials))
+            self.test_data_sources_connection(declarative_data_sources, credentials_path, config_file)
+        credentials = self._credentials_from_file(credentials_path) if credentials_path is not None else None
+        self._layout_api.put_data_sources_layout(
+            declarative_data_sources.to_api(credentials=credentials, config_file=config_file)
+        )
 
     def store_declarative_data_sources(self, layout_root_path: Path = Path.cwd()) -> None:
         """Store data sources layouts in a directory hierarchy.
@@ -236,6 +222,7 @@ class CatalogDataSourceService(CatalogServiceBase):
         self,
         layout_root_path: Path = Path.cwd(),
         credentials_path: Optional[Path] = None,
+        config_file: Optional[Union[str, Path]] = None,
         test_data_sources: bool = False,
     ) -> None:
         """Loads and sets layouts stored using `store_declarative_data_sources`.
@@ -247,7 +234,9 @@ class CatalogDataSourceService(CatalogServiceBase):
             layout_root_path (Optional[Path], optional):
                 Path to the root of the layout directory. Defaults to Path.cwd().
             credentials_path (Optional[Path], optional):
-                Path to the credentials. Defaults to Path.cwd().
+                Path to the credentials.
+            config_file (Optional[Union[str, Path]], optional):
+                Path to the config file.
             test_data_sources (bool, optional):
                 If True, the connection of data sources is tested. Defaults to False.
 
@@ -255,7 +244,7 @@ class CatalogDataSourceService(CatalogServiceBase):
             None
         """
         data_sources = self.load_declarative_data_sources(layout_root_path)
-        self.put_declarative_data_sources(data_sources, credentials_path, test_data_sources)
+        self.put_declarative_data_sources(data_sources, credentials_path, config_file, test_data_sources)
 
     @staticmethod
     def store_pdm_to_disk(pdm: CatalogDeclarativeTables, path: Path = Path.cwd()) -> None:
@@ -318,10 +307,10 @@ class CatalogDataSourceService(CatalogServiceBase):
     def scan_pdm_and_generate_logical_model(
         self,
         data_source_id: str,
-        generate_ldm_request: CatalogGenerateLdmRequest = CatalogGenerateLdmRequest(separator="__", wdf_prefix="wdf"),
+        generate_ldm_request: Optional[CatalogGenerateLdmRequest] = None,
         scan_request: CatalogScanModelRequest = CatalogScanModelRequest(),
         report_warnings: bool = False,
-    ) -> Tuple[CatalogDeclarativeModel, CatalogScanResultPdm]:
+    ) -> tuple[CatalogDeclarativeModel, CatalogScanResultPdm]:
         """Scan data source and use returned PDM to generate logical data model. If generate_ldm_request
         contains PDM already, PDM tables received from the scan are appended without deduplication.
 
@@ -343,6 +332,9 @@ class CatalogDataSourceService(CatalogServiceBase):
                 An instance of CatalogScanResultPdm.
                 Containing pdm itself and a list of warnings that occurred during scanning.
         """
+        if not generate_ldm_request:
+            generate_ldm_request = CatalogGenerateLdmRequest(separator="__", wdf_prefix="wdf")
+
         scan_result = self.scan_data_source(data_source_id, scan_request, report_warnings)
         if generate_ldm_request.pdm and generate_ldm_request.pdm.tables:
             generate_ldm_request.pdm.tables.extend(scan_result.pdm.tables)
@@ -438,7 +430,10 @@ class CatalogDataSourceService(CatalogServiceBase):
         return ScanSqlResponse.from_api(self._actions_api.scan_sql(data_source_id, sql_request.to_api()))
 
     def test_data_sources_connection(
-        self, declarative_data_sources: CatalogDeclarativeDataSources, credentials_path: Optional[Path] = None
+        self,
+        declarative_data_sources: CatalogDeclarativeDataSources,
+        credentials_path: Optional[Path] = None,
+        config_file: Optional[Union[str, Path]] = None,
     ) -> None:
         """Tests connection to declarative data sources.
 
@@ -453,6 +448,8 @@ class CatalogDataSourceService(CatalogServiceBase):
                 Declarative Data Sources object
             credentials_path (Optional[Path], optional):
                 Path to the credentials. Defaults to None.
+            config_file (Optional[Union[str, Path]], optional):
+                Path to the config file. Defaults to None.
 
         Raises:
             ValueError:
@@ -461,7 +458,15 @@ class CatalogDataSourceService(CatalogServiceBase):
         Returns:
             None
         """
-        credentials = self._credentials_from_file(credentials_path) if credentials_path is not None else dict()
+
+        credentials = dict()
+        if credentials_path is not None and config_file is not None:
+            raise ValueError("Only one of credentials or config_file should be provided")
+        if credentials_path is not None:
+            credentials = self._credentials_from_file(credentials_path)
+        if config_file is not None:
+            credentials = get_ds_credentials(config_file)
+
         errors: dict[str, str] = dict()
         for declarative_data_source in declarative_data_sources.data_sources:
             if credentials.get(declarative_data_source.id) is not None:
@@ -470,6 +475,21 @@ class CatalogDataSourceService(CatalogServiceBase):
                     response = self._actions_api.test_data_source_definition(
                         declarative_data_source.to_test_request(token=token)
                     )
+                elif declarative_data_source.type == DATABRICKS_TYPE:
+                    if declarative_data_source.client_id and declarative_data_source.client_id.strip():
+                        client_secret = ClientSecretCredentialsFromFile.client_secret_from_file(
+                            credentials[declarative_data_source.id]
+                        )
+                        response = self._actions_api.test_data_source_definition(
+                            declarative_data_source.to_test_request(client_secret=client_secret)
+                        )
+                    else:
+                        token = TokenCredentialsFromFile.token_from_file(
+                            file_path=credentials[declarative_data_source.id], base64_encode=False
+                        )
+                        response = self._actions_api.test_data_source_definition(
+                            declarative_data_source.to_test_request(token=token)
+                        )
                 else:
                     response = self._actions_api.test_data_source_definition(
                         declarative_data_source.to_test_request(password=credentials[declarative_data_source.id])
@@ -524,6 +544,6 @@ class CatalogDataSourceService(CatalogServiceBase):
         if data.get("data_sources") is None:
             raise ValueError("The file has a wrong structure. There should be a root key 'data_sources'.")
         if len(data["data_sources"]) == 0:
-            raise ValueError("There are no pairs of data source id and token.")
+            raise ValueError("There are no pairs of data source id and credentials.")
         credentials = data["data_sources"]
         return credentials

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import List
 
 import pytest
 from gooddata_sdk import (
@@ -57,7 +56,7 @@ def _assert_default_permissions(catalog_declarative_permissions: CatalogDeclarat
 
 
 def _assert_organization_permissions_id(
-    catalog_organization_permissions: List[CatalogDeclarativeOrganizationPermission],
+    catalog_organization_permissions: list[CatalogDeclarativeOrganizationPermission],
 ) -> None:
     assert set(org_permission.assignee.id for org_permission in catalog_organization_permissions) == {"adminGroup"}
 
@@ -79,10 +78,7 @@ def _validation_helper(class_type, attribute_name: str):
     client_class = class_type.client_class()
     allowed_values = list(client_class.allowed_values.get((attribute_name,)).values())
     for allowed_value in allowed_values:
-        try:
-            class_type(name=allowed_value, assignee=CatalogAssigneeIdentifier(id="", type="user"))
-        except ValueError:
-            assert False
+        class_type(name=allowed_value, assignee=CatalogAssigneeIdentifier(id="", type="user"))
     with pytest.raises(ValueError):
         class_type(name="nonsense", assignee=CatalogAssigneeIdentifier(id="", type="user"))
 
@@ -166,7 +162,7 @@ def test_put_declarative_permissions(test_config):
     assert len(declarative_permissions_e.permissions) == 0
     assert len(declarative_permissions_e.hierarchy_permissions) == 0
 
-    with open(expected_json_path, "r", encoding="utf-8") as f:
+    with open(expected_json_path, encoding="utf-8") as f:
         data = json.load(f)
 
     declarative_workspace_permissions = CatalogDeclarativeWorkspacePermissions.from_dict(data, camel_case=True)
@@ -202,12 +198,12 @@ def test_put_and_get_declarative_organization_permissions(test_config):
     expected_json_path = _current_dir / "expected" / "declarative_organization_permissions.json"
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
 
-    with open(expected_json_path, "r", encoding="utf-8") as f:
+    with open(expected_json_path, encoding="utf-8") as f:
         data = json.load(f)
 
-    declarative_organization_permissions = []
-    for permission in data:
-        declarative_organization_permissions.append(CatalogDeclarativeOrganizationPermission.from_api(permission))
+    declarative_organization_permissions = [
+        CatalogDeclarativeOrganizationPermission.from_api(permission) for permission in data
+    ]
 
     try:
         sdk.catalog_permission.put_declarative_organization_permissions(declarative_organization_permissions)

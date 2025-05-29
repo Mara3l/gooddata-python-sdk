@@ -82,6 +82,19 @@ class DeclarativeDataSource(ModelNormal):
             'MYSQL': "MYSQL",
             'MARIADB': "MARIADB",
             'ORACLE': "ORACLE",
+            'SINGLESTORE': "SINGLESTORE",
+            'MOTHERDUCK': "MOTHERDUCK",
+            'FLEXCONNECT': "FLEXCONNECT",
+            'STARROCKS': "STARROCKS",
+            'ATHENA': "ATHENA",
+        },
+        ('authentication_type',): {
+            'None': None,
+            'USERNAME_PASSWORD': "USERNAME_PASSWORD",
+            'TOKEN': "TOKEN",
+            'KEY_PAIR': "KEY_PAIR",
+            'CLIENT_SECRET': "CLIENT_SECRET",
+            'ACCESS_TOKEN': "ACCESS_TOKEN",
         },
         ('cache_strategy',): {
             'ALWAYS': "ALWAYS",
@@ -101,7 +114,19 @@ class DeclarativeDataSource(ModelNormal):
         ('schema',): {
             'max_length': 255,
         },
+        ('client_id',): {
+            'max_length': 255,
+        },
+        ('client_secret',): {
+            'max_length': 255,
+        },
         ('password',): {
+            'max_length': 255,
+        },
+        ('private_key',): {
+            'max_length': 15000,
+        },
+        ('private_key_passphrase',): {
             'max_length': 255,
         },
         ('token',): {
@@ -142,13 +167,16 @@ class DeclarativeDataSource(ModelNormal):
             'name': (str,),  # noqa: E501
             'schema': (str,),  # noqa: E501
             'type': (str,),  # noqa: E501
-            'cache_path': ([str],),  # noqa: E501
+            'authentication_type': (str, none_type,),  # noqa: E501
             'cache_strategy': (str,),  # noqa: E501
+            'client_id': (str,),  # noqa: E501
+            'client_secret': (str,),  # noqa: E501
             'decoded_parameters': ([Parameter],),  # noqa: E501
-            'enable_caching': (bool,),  # noqa: E501
             'parameters': ([Parameter],),  # noqa: E501
             'password': (str,),  # noqa: E501
             'permissions': ([DeclarativeDataSourcePermission],),  # noqa: E501
+            'private_key': (str, none_type,),  # noqa: E501
+            'private_key_passphrase': (str, none_type,),  # noqa: E501
             'token': (str,),  # noqa: E501
             'url': (str,),  # noqa: E501
             'username': (str,),  # noqa: E501
@@ -164,13 +192,16 @@ class DeclarativeDataSource(ModelNormal):
         'name': 'name',  # noqa: E501
         'schema': 'schema',  # noqa: E501
         'type': 'type',  # noqa: E501
-        'cache_path': 'cachePath',  # noqa: E501
+        'authentication_type': 'authenticationType',  # noqa: E501
         'cache_strategy': 'cacheStrategy',  # noqa: E501
+        'client_id': 'clientId',  # noqa: E501
+        'client_secret': 'clientSecret',  # noqa: E501
         'decoded_parameters': 'decodedParameters',  # noqa: E501
-        'enable_caching': 'enableCaching',  # noqa: E501
         'parameters': 'parameters',  # noqa: E501
         'password': 'password',  # noqa: E501
         'permissions': 'permissions',  # noqa: E501
+        'private_key': 'privateKey',  # noqa: E501
+        'private_key_passphrase': 'privateKeyPassphrase',  # noqa: E501
         'token': 'token',  # noqa: E501
         'url': 'url',  # noqa: E501
         'username': 'username',  # noqa: E501
@@ -223,13 +254,16 @@ class DeclarativeDataSource(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
-            cache_path ([str]): Path to schema, where intermediate caches are stored.. [optional]  # noqa: E501
+            authentication_type (str, none_type): Type of authentication used to connect to the database.. [optional]  # noqa: E501
             cache_strategy (str): Determines how the results coming from a particular datasource should be cached. - ALWAYS: The results from the datasource should be cached normally (the default). - NEVER: The results from the datasource should never be cached.. [optional]  # noqa: E501
+            client_id (str): Id of client with permission to connect to the data source.. [optional]  # noqa: E501
+            client_secret (str): The client secret to use to connect to the database providing the data for the data source.. [optional]  # noqa: E501
             decoded_parameters ([Parameter]): [optional]  # noqa: E501
-            enable_caching (bool): Enable caching of intermediate results.. [optional]  # noqa: E501
             parameters ([Parameter]): [optional]  # noqa: E501
             password (str): Password for the data-source user, property is never returned back.. [optional]  # noqa: E501
             permissions ([DeclarativeDataSourcePermission]): [optional]  # noqa: E501
+            private_key (str, none_type): The private key to use to connect to the database providing the data for the data source.. [optional]  # noqa: E501
+            private_key_passphrase (str, none_type): The passphrase used to encrypt the private key.. [optional]  # noqa: E501
             token (str): Token as an alternative to username and password.. [optional]  # noqa: E501
             url (str): An connection string relevant to type of database.. [optional]  # noqa: E501
             username (str): User with permission connect the data source/database.. [optional]  # noqa: E501
@@ -328,13 +362,16 @@ class DeclarativeDataSource(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
-            cache_path ([str]): Path to schema, where intermediate caches are stored.. [optional]  # noqa: E501
+            authentication_type (str, none_type): Type of authentication used to connect to the database.. [optional]  # noqa: E501
             cache_strategy (str): Determines how the results coming from a particular datasource should be cached. - ALWAYS: The results from the datasource should be cached normally (the default). - NEVER: The results from the datasource should never be cached.. [optional]  # noqa: E501
+            client_id (str): Id of client with permission to connect to the data source.. [optional]  # noqa: E501
+            client_secret (str): The client secret to use to connect to the database providing the data for the data source.. [optional]  # noqa: E501
             decoded_parameters ([Parameter]): [optional]  # noqa: E501
-            enable_caching (bool): Enable caching of intermediate results.. [optional]  # noqa: E501
             parameters ([Parameter]): [optional]  # noqa: E501
             password (str): Password for the data-source user, property is never returned back.. [optional]  # noqa: E501
             permissions ([DeclarativeDataSourcePermission]): [optional]  # noqa: E501
+            private_key (str, none_type): The private key to use to connect to the database providing the data for the data source.. [optional]  # noqa: E501
+            private_key_passphrase (str, none_type): The passphrase used to encrypt the private key.. [optional]  # noqa: E501
             token (str): Token as an alternative to username and password.. [optional]  # noqa: E501
             url (str): An connection string relevant to type of database.. [optional]  # noqa: E501
             username (str): User with permission connect the data source/database.. [optional]  # noqa: E501
